@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { DATA_DIR } = require("./paths");
 
-const CACHE_FILE = path.join(DATA_DIR, "mitm", "aliases.json");
+const CACHE_FILE = path.join(DATA_DIR, "traffic-router", "aliases.json");
 
 function readCache() {
   try {

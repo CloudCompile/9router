@@ -10,7 +10,7 @@ const DATA_DIR = process.env.DATA_DIR
     ? path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "9router")
     : path.join(os.homedir(), ".9router"));
 
-const CACHE_FILE = path.join(DATA_DIR, "mitm", "aliases.json");
+const CACHE_FILE = path.join(DATA_DIR, "traffic-router", "aliases.json");
 
 function writeAtomic(data) {
   const dir = path.dirname(CACHE_FILE);

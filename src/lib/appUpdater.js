@@ -14,8 +14,8 @@ function killMitmByPidFile() {
       process.platform === "win32"
         ? path.join(process.env.APPDATA || "", "9router")
         : path.join(os.homedir(), ".9router"),
-      "mitm",
-      ".mitm.pid"
+      "traffic-router",
+      ".router.pid"
     );
     if (!fs.existsSync(mitmPidFile)) return;
     const pid = parseInt(fs.readFileSync(mitmPidFile, "utf8").trim(), 10);

@@ -40,7 +40,7 @@ async function resolveMitmRouterBaseUrl() {
 
 const MITM_PORT = 443;
 const MITM_WIN_NODE_PORT = 8443;
-const PID_FILE = path.join(ROUTER_DIR, ".mitm.pid");
+const PID_FILE = path.join(ROUTER_DIR, ".router.pid");
 
 const MITM_MAX_RESTARTS = 5;
 const MITM_RESTART_DELAYS_MS = [5000, 10000, 20000, 30000, 60000];
@@ -54,9 +54,9 @@ function resolveBundledServerPath() {
   if (process.env.ROUTER_SERVER_PATH) return process.env.ROUTER_SERVER_PATH;
   const sibling = path.join(__dirname, "server.js");
   if (fs.existsSync(sibling)) return sibling;
-  const fromCwd = path.join(process.cwd(), "src", "mitm", "server.js");
+  const fromCwd = path.join(process.cwd(), "src", "traffic-router", "server.js");
   if (fs.existsSync(fromCwd)) return fromCwd;
-  const fromNext = path.join(process.cwd(), "..", "src", "mitm", "server.js");
+  const fromNext = path.join(process.cwd(), "..", "src", "traffic-router", "server.js");
   if (fs.existsSync(fromNext)) return fromNext;
   return fromCwd;
 }
@@ -73,7 +73,7 @@ function ensureRuntimeServer(bundledPath) {
       return bundledPath;
     }
 
-    const runtimeDir = path.join(DATA_DIR, "runtime", "mitm");
+    const runtimeDir = path.join(DATA_DIR, "runtime", "traffic-router");
     const runtimeServer = path.join(runtimeDir, "server.js");
 
     // Skip copy if sizes match (bundle unchanged since last run)
@@ -94,7 +94,7 @@ function ensureRuntimeServer(bundledPath) {
 
 const SERVER_PATH = ensureRuntimeServer(resolveBundledServerPath());
 const ENCRYPT_ALGO = "aes-256-gcm";
-const ENCRYPT_SALT = "9router-mitm-pwd";
+const ENCRYPT_SALT = "9router-router-pwd";
 
 function getProcessUsingPort443() {
   try {
