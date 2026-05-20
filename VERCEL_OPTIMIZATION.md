@@ -225,8 +225,13 @@ vercel deploy --prod
 # - Uses sql.js as database adapter
 ```
 
-### Regions
-Deployed to 6 global regions for low latency:
+### Regions (Pro/Enterprise Only)
+For multi-region deployment, add to vercel.json (requires Pro plan):
+```json
+"regions": ["iad1", "sfo1", "lhr1", "cle1", "sin1", "hkg1"]
+```
+
+Free tier deploys to default region (US East). Upgrade to Pro for:
 - IAD1 (US East - Virginia)
 - SFO1 (US West - California)
 - LHR1 (EU - London)
