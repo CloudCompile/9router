@@ -11,10 +11,10 @@ function time() {
 const log = (msg) => console.log(`[${time()}] [ROUTER] ${msg}`);
 const err = (msg) => console.error(`[${time()}] ❌ [ROUTER] ${msg}`);
 
-const DUMP_DIR = path.join(DATA_DIR, "logs", "mitm");
+const DUMP_DIR = path.join(DATA_DIR, "logs", "traffic-router");
 if (!fs.existsSync(DUMP_DIR)) fs.mkdirSync(DUMP_DIR, { recursive: true });
 
-// Clear all files inside DUMP_DIR (called on MITM server start to avoid unbounded growth)
+// Clear all files inside DUMP_DIR (called on Traffic Router server start to avoid unbounded growth)
 function clearDumpDir() {
   try {
     if (!fs.existsSync(DUMP_DIR)) return;

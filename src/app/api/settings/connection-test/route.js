@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { testProxyUrl } from "@/lib/network/proxyTest";
+import { testProxyUrl } from "@/lib/network/connectionTest";
 
 export async function POST(request) {
   try {

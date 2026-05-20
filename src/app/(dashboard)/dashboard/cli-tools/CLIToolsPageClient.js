@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { CardSkeleton } from "@/shared/components";
 import { CLI_TOOLS, TRAFFIC_ROUTER_TOOLS } from "@/shared/constants/cliTools";
-import { MitmLinkCard } from "./components";
+import { RouterLinkCard } from "./components";
 import ToolSummaryCard from "./components/ToolSummaryCard";
 
 const ALL_STATUSES_URL = "/api/cli-tools/all-statuses";
@@ -41,7 +41,7 @@ export default function CLIToolsPageClient({ machineId }) {
   }
 
   const regularTools = Object.entries(CLI_TOOLS);
-  const mitmTools = Object.entries(TRAFFIC_ROUTER_TOOLS);
+  const routerTools = Object.entries(TRAFFIC_ROUTER_TOOLS);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-1 sm:px-0">
@@ -53,11 +53,11 @@ export default function CLIToolsPageClient({ machineId }) {
       <div className="flex flex-col gap-3 sm:gap-4">
         <div className="flex items-center gap-2 px-1">
           <span className="material-symbols-outlined text-[18px] text-primary">security</span>
-          <h2 className="text-sm font-semibold text-text-main">MITM Tools</h2>
+          <h2 className="text-sm font-semibold text-text-main">Traffic Router Tools</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {mitmTools.map(([toolId, tool]) => (
-            <MitmLinkCard key={toolId} tool={tool} />
+          {routerTools.map(([toolId, tool]) => (
+            <RouterLinkCard key={toolId} tool={tool} />
           ))}
         </div>
       </div>

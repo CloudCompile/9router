@@ -4,7 +4,7 @@ import { makeKv } from "../helpers/kvStore.js";
 
 const aliasKv = makeKv("modelAliases");
 const customKv = makeKv("customModels");
-const mitmKv = makeKv("mitmAlias");
+const mitmKv = makeKv("routerAlias");
 
 // modelAliases: key=alias, value=modelString
 export async function getModelAliases() {
@@ -48,8 +48,8 @@ export async function deleteCustomModel({ providerAlias, id, type = "llm" }) {
   await customKv.remove(customKey(providerAlias, id, type));
 }
 
-// mitmAlias: key=toolName, value=mappings object
-export async function getMitmAlias(toolName) {
+// routerAlias: key=toolName, value=mappings object
+export async function getRouterAlias(toolName) {
   if (toolName) {
     const v = await mitmKv.get(toolName);
     return v || {};
@@ -57,6 +57,6 @@ export async function getMitmAlias(toolName) {
   return await mitmKv.getAll();
 }
 
-export async function setMitmAliasAll(toolName, mappings) {
+export async function setRouterAliasAll(toolName, mappings) {
   await mitmKv.set(toolName, mappings || {});
 }

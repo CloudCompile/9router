@@ -1,5 +1,5 @@
-// JSON cache for mitmAlias — read by standalone MITM server (no SQLite native binding).
-// Source of truth = SQLite kv['mitmAlias']. JSON is a read-replica synced on app start
+// JSON cache for routerAlias — read by standalone Traffic Router server (no SQLite native binding).
+// Source of truth = SQLite kv['routerAlias']. JSON is a read-replica synced on app start
 // and after every UI write.
 import fs from "fs";
 import path from "path";
@@ -10,7 +10,7 @@ const DATA_DIR = process.env.DATA_DIR
     ? path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "9router")
     : path.join(os.homedir(), ".9router"));
 
-const CACHE_FILE = path.join(DATA_DIR, "mitm", "aliases.json");
+const CACHE_FILE = path.join(DATA_DIR, "traffic-router", "aliases.json");
 
 function writeAtomic(data) {
   const dir = path.dirname(CACHE_FILE);
@@ -20,14 +20,14 @@ function writeAtomic(data) {
   fs.renameSync(tmp, CACHE_FILE);
 }
 
-// Sync entire mitmAlias map from DB → JSON file
+// Sync entire routerAlias map from DB → JSON file
 export async function syncToJson() {
   try {
-    const { getMitmAlias } = await import("@/lib/db/repos/aliasRepo.js");
-    const all = await getMitmAlias();
+    const { getRouterAlias } = await import("@/lib/db/repos/aliasRepo.js");
+    const all = await getRouterAlias();
     writeAtomic(all || {});
   } catch (e) {
-    console.log("[mitmAliasCache] sync failed:", e.message);
+    console.log("[routerAliasCache] sync failed:", e.message);
   }
 }
 
@@ -41,6 +41,6 @@ export function writeAliasForTool(tool, mappings) {
     current[tool] = mappings || {};
     writeAtomic(current);
   } catch (e) {
-    console.log("[mitmAliasCache] write failed:", e.message);
+    console.log("[routerAliasCache] write failed:", e.message);
   }
 }

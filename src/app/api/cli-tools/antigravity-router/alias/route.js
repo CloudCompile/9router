@@ -1,24 +1,24 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { getMitmAlias, setMitmAliasAll } from "@/models";
-import { getMitmStatus } from "@/mitm/manager";
-import { writeAliasForTool } from "@/lib/mitmAliasCache";
+import { getRouterAlias, setRouterAliasAll } from "@/models";
+import { getTrafficRouterStatus } from "@/traffic-router/manager";
+import { writeAliasForTool } from "@/lib/routerAliasCache";
 
-// GET - Get MITM aliases for a tool
+// GET - Get Traffic Router aliases for a tool
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const toolName = searchParams.get("tool");
-    const aliases = await getMitmAlias(toolName || undefined);
+    const aliases = await getRouterAlias(toolName || undefined);
     return NextResponse.json({ aliases });
   } catch (error) {
-    console.log("Error fetching MITM aliases:", error.message);
+    console.log("Error fetching Traffic Router aliases:", error.message);
     return NextResponse.json({ error: "Failed to fetch aliases" }, { status: 500 });
   }
 }
 
-// PUT - Save MITM aliases for a specific tool
+// PUT - Save Traffic Router aliases for a specific tool
 export async function PUT(request) {
   try {
     const { tool, mappings } = await request.json();
@@ -28,7 +28,7 @@ export async function PUT(request) {
     }
 
     // Check if DNS is enabled for this tool
-    const status = await getMitmStatus();
+    const status = await getTrafficRouterStatus();
     if (!status.dnsStatus || !status.dnsStatus[tool]) {
       return NextResponse.json(
         { error: `DNS must be enabled for ${tool} before editing model mappings` },
@@ -43,11 +43,11 @@ export async function PUT(request) {
       }
     }
 
-    await setMitmAliasAll(tool, filtered);
+    await setRouterAliasAll(tool, filtered);
     writeAliasForTool(tool, filtered);
     return NextResponse.json({ success: true, aliases: filtered });
   } catch (error) {
-    console.log("Error saving MITM aliases:", error.message);
+    console.log("Error saving Traffic Router aliases:", error.message);
     return NextResponse.json({ error: "Failed to save aliases" }, { status: 500 });
   }
 }

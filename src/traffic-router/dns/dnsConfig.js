@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const { log, err } = require("../logger");
-const { TOOL_HOSTS } = require("../../shared/constants/mitmToolHosts.js");
+const { ROUTER_HOSTS } = require("../../shared/constants/routerToolHosts.js");
 const { runElevatedPowerShell, isAdmin } = require("../winElevated.js");
 
 /**
@@ -144,7 +144,7 @@ function checkAllDNSStatus() {
  * Add DNS entries for a specific tool
  */
 async function addDNSEntry(tool, sudoPassword) {
-  const hosts = TOOL_HOSTS[tool];
+  const hosts = ROUTER_HOSTS[tool];
   if (!hosts) throw new Error(`Unknown tool: ${tool}`);
 
   const entriesToAdd = hosts.filter(h => !checkDNSEntry(h));
@@ -183,7 +183,7 @@ async function addDNSEntry(tool, sudoPassword) {
  * Remove DNS entries for a specific tool
  */
 async function removeDNSEntry(tool, sudoPassword) {
-  const hosts = TOOL_HOSTS[tool];
+  const hosts = ROUTER_HOSTS[tool];
   if (!hosts) throw new Error(`Unknown tool: ${tool}`);
 
   const entriesToRemove = hosts.filter(h => checkDNSEntry(h));

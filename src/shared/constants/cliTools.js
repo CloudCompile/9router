@@ -58,7 +58,7 @@ export const TRAFFIC_ROUTER_TOOLS = {
   //   color: "#000000",
   //   description: "Cursor IDE via Traffic Router",
   //   configType: "traffic-router",
-  //   mitmDomain: "api2.cursor.sh",
+  //   routingDomain: "api2.cursor.sh",
   //   defaultModels: [
   //     { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", alias: "claude-sonnet-4-5" },
   //     { id: "claude-opus-4", name: "Claude Opus 4", alias: "claude-opus-4" },

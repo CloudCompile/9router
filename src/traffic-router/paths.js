@@ -27,6 +27,6 @@ function getDataDir() {
 }
 
 const DATA_DIR = getDataDir();
-const MITM_DIR = path.join(DATA_DIR, "mitm");
+const ROUTER_DIR = path.join(DATA_DIR, "traffic-router");
 
-module.exports = { DATA_DIR, MITM_DIR };
+module.exports = { DATA_DIR, ROUTER_DIR };

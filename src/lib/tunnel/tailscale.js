@@ -4,7 +4,7 @@ import os from "os";
 import crypto from "crypto";
 import { execSync, exec, spawn } from "child_process";
 import { promisify } from "util";
-import { execWithPassword } from "@/mitm/dns/dnsConfig";
+import { execWithPassword } from "@/traffic-router/dns/dnsConfig";
 import { saveTailscalePid, loadTailscalePid, clearTailscalePid } from "./state.js";
 import { DATA_DIR } from "@/lib/dataDir.js";
 

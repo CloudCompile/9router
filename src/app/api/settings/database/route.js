@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { exportDb, getSettings, importDb } from "@/lib/localDb";
-import { applyOutboundProxyEnv } from "@/lib/network/outboundProxy";
+import { applyOutboundProxyEnv } from "@/lib/network/outboundConnection";
 
 export async function GET() {
   try {

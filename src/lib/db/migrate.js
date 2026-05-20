@@ -236,11 +236,11 @@ function importLegacyMain(adapter, data) {
       adapter.run(`INSERT OR REPLACE INTO kv(scope, key, value) VALUES('customModels', ?, ?)`, [k, stringifyJson(m)]);
     }
   }
-  for (const [tool, mappings] of Object.entries(data.mitmAlias || {})) {
+  for (const [tool, mappings] of Object.entries(data.routerAlias || {})) {
     if (isPostgres) {
-      adapter.run(`INSERT INTO kv(scope, key, value) VALUES($1, $2, $3) ON CONFLICT(scope, key) DO UPDATE SET value = excluded.value`, ['mitmAlias', tool, stringifyJson(mappings || {})]);
+      adapter.run(`INSERT INTO kv(scope, key, value) VALUES($1, $2, $3) ON CONFLICT(scope, key) DO UPDATE SET value = excluded.value`, ['routerAlias', tool, stringifyJson(mappings || {})]);
     } else {
-      adapter.run(`INSERT OR REPLACE INTO kv(scope, key, value) VALUES('mitmAlias', ?, ?)`, [tool, stringifyJson(mappings || {})]);
+      adapter.run(`INSERT OR REPLACE INTO kv(scope, key, value) VALUES('routerAlias', ?, ?)`, [tool, stringifyJson(mappings || {})]);
     }
   }
   for (const [provider, models] of Object.entries(data.pricing || {})) {

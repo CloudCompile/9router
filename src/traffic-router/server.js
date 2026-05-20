@@ -6,14 +6,14 @@ const { promisify } = require("util");
 const { execSync } = require("child_process");
 const { log, err, dumpRequest, createResponseDumper, clearDumpDir } = require("./logger");
 const { IS_DEV, LSOF_BIN, TARGET_HOSTS, URL_PATTERNS, MODEL_SYNONYMS, MODEL_PATTERNS, getToolForHost } = require("./config");
-const { DATA_DIR, MITM_DIR } = require("./paths");
+const { DATA_DIR, ROUTER_DIR } = require("./paths");
 const { getCertForDomain } = require("./cert/generate");
-const { getMitmAlias } = require("./dbReader");
+const { getRouterAlias } = require("./dbReader");
 const LOCAL_PORT = 443;
 const IS_WIN = process.platform === "win32";
 const ENABLE_FILE_LOG = IS_DEV;
 
-// Clear stale dump files on every MITM start (prevents unbounded disk usage)
+// Clear stale dump files on every Traffic Router start (prevents unbounded disk usage)
 clearDumpDir();
 const INTERNAL_REQUEST_HEADER = { name: "x-request-source", value: "local" };
 
@@ -54,8 +54,8 @@ function sniCallback(servername, cb) {
 
 let sslOptions;
 try {
-  const rootKey = fs.readFileSync(path.join(MITM_DIR, "rootCA.key"));
-  const rootCert = fs.readFileSync(path.join(MITM_DIR, "rootCA.crt"));
+  const rootKey = fs.readFileSync(path.join(ROUTER_DIR, "rootCA.key"));
+  const rootCert = fs.readFileSync(path.join(ROUTER_DIR, "rootCA.crt"));
   rootCAPem = rootCert.toString("utf8");
   sslOptions = { key: rootKey, cert: rootCert, SNICallback: sniCallback };
 } catch (e) {
@@ -104,7 +104,7 @@ function extractModel(url, body) {
 function getMappedModel(tool, model) {
   if (!model) return null;
   try {
-    const aliases = getMitmAlias(tool);
+    const aliases = getRouterAlias(tool);
     if (!aliases) return null;
     // Normalize via synonym map (e.g., gemini-default → gemini-3-flash)
     const lookup = MODEL_SYNONYMS?.[tool]?.[model] || model;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSettings, updateSettings } from "@/lib/localDb";
-import { applyOutboundProxyEnv } from "@/lib/network/outboundProxy";
+import { applyOutboundProxyEnv } from "@/lib/network/outboundConnection";
 import { resetComboRotation } from "open-sse/services/combo.js";
 import bcrypt from "bcryptjs";
 
@@ -74,8 +74,8 @@ export async function PATCH(request) {
 
     // Apply outbound proxy settings immediately (no restart required)
     if (
-      Object.prototype.hasOwnProperty.call(body, "outboundProxyEnabled") ||
-      Object.prototype.hasOwnProperty.call(body, "outboundProxyUrl") ||
+      Object.prototype.hasOwnProperty.call(body, "outboundConnectionEnabled") ||
+      Object.prototype.hasOwnProperty.call(body, "outboundConnectionUrl") ||
       Object.prototype.hasOwnProperty.call(body, "outboundNoProxy")
     ) {
       applyOutboundProxyEnv(settings);

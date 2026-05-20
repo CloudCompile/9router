@@ -1,10 +1,10 @@
 const path = require("path");
 const fs = require("fs");
 const forge = require("node-forge");
-const { MITM_DIR } = require("../paths");
+const { ROUTER_DIR } = require("../paths");
 
-const ROOT_CA_KEY_PATH = path.join(MITM_DIR, "rootCA.key");
-const ROOT_CA_CERT_PATH = path.join(MITM_DIR, "rootCA.crt");
+const ROOT_CA_KEY_PATH = path.join(ROUTER_DIR, "rootCA.key");
+const ROOT_CA_CERT_PATH = path.join(ROUTER_DIR, "rootCA.crt");
 
 /**
  * Check if cert file is expired or expiring within 30 days
@@ -35,8 +35,8 @@ async function generateRootCA() {
     try { fs.unlinkSync(ROOT_CA_CERT_PATH); } catch { /* ignore */ }
   }
 
-  if (!fs.existsSync(MITM_DIR)) {
-    fs.mkdirSync(MITM_DIR, { recursive: true });
+  if (!fs.existsSync(ROUTER_DIR)) {
+    fs.mkdirSync(ROUTER_DIR, { recursive: true });
   }
 
   console.log("🔐 Generating Root CA certificate...");
@@ -53,7 +53,7 @@ async function generateRootCA() {
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
 
   const attrs = [
-    { name: "commonName", value: "9Router MITM Root CA" },
+    { name: "commonName", value: "9Router Traffic Router Root CA" },
     { name: "organizationName", value: "9Router" },
     { name: "countryName", value: "US" }
   ];

@@ -194,7 +194,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
       let codexServerSide = false;
       if (provider === "codex") {
         try {
-          const proxyUrl = new URL(`/api/oauth/codex/start-proxy`, window.location.origin);
+          const proxyUrl = new URL(`/api/oauth/codex/start-routing`, window.location.origin);
           proxyUrl.searchParams.set("app_port", appPort);
           proxyUrl.searchParams.set("state", data.state);
           proxyUrl.searchParams.set("code_verifier", data.codeVerifier);
@@ -250,7 +250,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
       // Abort polling and cleanup proxy when modal closes
       pollingAbortRef.current = true;
       if (provider === "codex") {
-        fetch("/api/oauth/codex/stop-proxy").catch(() => {});
+        fetch("/api/oauth/codex/stop-routing").catch(() => {});
       }
     }
   }, [isOpen, provider, startOAuthFlow]);
@@ -406,7 +406,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
   // Clear session on modal close + cleanup proxy
   const handleClose = useCallback(() => {
     if (provider === "codex") {
-      fetch("/api/oauth/codex/stop-proxy").catch(() => {});
+      fetch("/api/oauth/codex/stop-routing").catch(() => {});
     }
     onClose();
   }, [onClose, provider]);

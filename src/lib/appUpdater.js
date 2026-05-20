@@ -7,15 +7,15 @@ import { UPDATER_CONFIG } from "@/shared/constants/config";
 const KILL_TIMEOUT_MS = 5000;
 const PROCESS_WAIT_MS = 1500;
 
-// Kill MITM server by PID file (MITM may run as admin/sudo)
+// Kill Traffic Router server by PID file (Traffic Router may run as admin/sudo)
 function killMitmByPidFile() {
   try {
     const mitmPidFile = path.join(
       process.platform === "win32"
         ? path.join(process.env.APPDATA || "", "9router")
         : path.join(os.homedir(), ".9router"),
-      "mitm",
-      ".mitm.pid"
+      "traffic-router",
+      ".router.pid"
     );
     if (!fs.existsSync(mitmPidFile)) return;
     const pid = parseInt(fs.readFileSync(mitmPidFile, "utf8").trim(), 10);

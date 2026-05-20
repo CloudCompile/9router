@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProxyPoolById, updateProxyPool } from "@/models";
-import { testProxyUrl } from "@/lib/network/proxyTest";
+import { testProxyUrl } from "@/lib/network/connectionTest";
 import { fetch as undiciFetch } from "undici";
 
 async function testVercelRelay(relayUrl, timeoutMs = 10000) {
