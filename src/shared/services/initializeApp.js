@@ -52,6 +52,13 @@ export async function initializeApp() {
     await cleanupProviderConnections();
     const settings = await getSettings();
 
+    // On Vercel/serverless platforms, skip background services
+    const isServerless = process.env.VERCEL || process.env.RAILWAY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+    if (isServerless) {
+      console.log("[InitApp] Serverless environment detected, skipping background services");
+      return;
+    }
+
     // Auto-resume tunnel (once per process)
     if (settings.tunnelEnabled && !g.tunnelAutoResumed) {
       g.tunnelAutoResumed = true;

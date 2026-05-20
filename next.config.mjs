@@ -18,12 +18,16 @@ const nextConfig = {
   },
   outputFileTracingRoot: tracingRoot,
   outputFileTracingExcludes: {
-    "*": ["./gitbook/**/*"]
+    "*": ["./gitbook/**/*", "./cli/**/*", "./tests/**/*"]
   },
   images: {
     unoptimized: true
   },
-  env: {},
+  env: {
+    NEXT_PUBLIC_VERCEL_DEPLOYMENT: process.env.NEXT_PUBLIC_VERCEL_DEPLOYMENT || "false"
+  },
+  poweredByHeader: false,
+  compress: true,
   webpack: (config, { isServer }) => {
     // Ignore fs/path modules in browser bundle
     if (!isServer) {
