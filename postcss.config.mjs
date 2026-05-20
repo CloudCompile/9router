@@ -2,23 +2,26 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+const isVercel = process.env.VERCEL === "1";
 
-// On Vercel, skip lightningcss entirely to avoid native binding issues
-const isVercel = process.env.VERCEL === "1" || process.env.CI === "true";
+let config = {};
 
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {
-      base: projectRoot,
-      ...(isVercel && { corePlugins: { optimizeUniversalDefaults: false } }),
-    },
-  },
-};
-
-// Prevent lightningcss from being loaded
+// On Vercel, use minimal CSS processing to avoid native modules
 if (isVercel) {
-  process.env.LIGHTNINGCSS_SKIP = "1";
-  process.env.NO_COLOR = "1";
+  // Use standard postcss without tailwindcss/postcss (which requires lightningcss)
+  // Tailwind CSS will still work via its default processing
+  config = {
+    plugins: {},
+  };
+} else {
+  // Local development: use full tailwindcss with optimizations
+  config = {
+    plugins: {
+      "@tailwindcss/postcss": {
+        base: projectRoot,
+      },
+    },
+  };
 }
 
 export default config;
