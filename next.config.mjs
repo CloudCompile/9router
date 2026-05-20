@@ -39,6 +39,21 @@ const nextConfig = {
     }
     // Exclude logs, .next, gitbook subapp from watcher
     config.watchOptions = { ...config.watchOptions, ignored: /[\\/](logs|\.next|gitbook|cli)[\\/]/ };
+
+    // On Vercel, ensure lightningcss issues don't block build
+    if (process.env.VERCEL) {
+      config.module.rules.forEach(rule => {
+        if (rule.test && rule.test.toString().includes('css')) {
+          if (rule.use && Array.isArray(rule.use)) {
+            rule.use = rule.use.filter(u => {
+              const loader = typeof u === 'string' ? u : u.loader;
+              return !loader || !loader.includes('lightningcss');
+            });
+          }
+        }
+      });
+    }
+
     return config;
   },
   async rewrites() {
