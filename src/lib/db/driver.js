@@ -4,9 +4,12 @@ import { ensureDirs, DATA_FILE } from "./paths.js";
 if (!global._dbAdapter) global._dbAdapter = { instance: null, initPromise: null, logged: false };
 const state = global._dbAdapter;
 
+// On Vercel/serverless, skip native adapters entirely
+const isServerless = !!process.env.VERCEL || !!process.env.RAILWAY || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
 async function tryBunSqlite() {
   // Bun runtime only — built-in, no install needed
-  if (!process.versions.bun) return null;
+  if (!process.versions.bun || isServerless) return null;
   try {
     const { createBunSqliteAdapter } = await import("./adapters/bunSqliteAdapter.js");
     return await createBunSqliteAdapter(DATA_FILE);
@@ -17,11 +20,11 @@ async function tryBunSqlite() {
 }
 
 async function tryBetterSqlite() {
-  // Skip on Bun — better-sqlite3 native bindings unsupported
-  if (process.versions.bun) return null;
+  // Skip on Bun, Vercel/serverless — better-sqlite3 native bindings unsupported
+  if (process.versions.bun || isServerless) return null;
   try {
     const { createBetterSqliteAdapter } = await import("./adapters/betterSqliteAdapter.js");
-    return createBetterSqliteAdapter(DATA_FILE);
+    return await createBetterSqliteAdapter(DATA_FILE);
   } catch (e) {
     console.warn(`[DB] better-sqlite3 unavailable: ${e.message}`);
     return null;
@@ -29,8 +32,8 @@ async function tryBetterSqlite() {
 }
 
 async function tryNodeSqlite() {
-  // Built-in since Node 22.5.0 — no install needed. Skip under Bun (no node:sqlite).
-  if (process.versions.bun) return null;
+  // Built-in since Node 22.5.0 — no install needed. Skip under Bun or Vercel.
+  if (process.versions.bun || isServerless) return null;
   const [maj, min] = process.versions.node.split(".").map(Number);
   if (maj < 22 || (maj === 22 && min < 5)) return null;
   try {
@@ -53,6 +56,21 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
+  // On Vercel, skip directly to sql.js to avoid any native module loading
+  if (isServerless) {
+    try {
+      const { createSqlJsAdapter } = await import("./adapters/sqljsAdapter.js");
+      const adapter = await createSqlJsAdapter(DATA_FILE);
+      console.log(`[DB] Driver: sql.js (serverless) | file: ${DATA_FILE}`);
+      const { runMigrationOnce } = await import("./migrate.js");
+      await runMigrationOnce(adapter);
+      return adapter;
+    } catch (e) {
+      console.error("[DB] Even sql.js failed on serverless:", e.message);
+      throw e;
+    }
+  }
+
   ensureDirs();
   // Order per runtime:
   //   Bun:  bun:sqlite → sql.js

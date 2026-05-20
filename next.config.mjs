@@ -12,7 +12,14 @@ const tracingRoot = process.env.NEXT_TRACING_ROOT_MODE === "workspace"
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   output: "standalone",
-  serverExternalPackages: ["better-sqlite3", "sql.js", "node:sqlite", "bun:sqlite", "lightningcss", "@tailwindcss/postcss", "@tailwindcss/node"],
+  serverExternalPackages: [
+    // Database
+    "better-sqlite3", "sql.js", "node:sqlite", "bun:sqlite",
+    // CSS (only on non-Vercel)
+    "lightningcss", "@tailwindcss/postcss", "@tailwindcss/node",
+    // Crypto/SSL (optional dependencies)
+    "node-forge", "selfsigned"
+  ],
   turbopack: {
     root: tracingRoot
   },
@@ -74,26 +81,44 @@ const nextConfig = {
     },
   ],
   webpack: (config, { isServer }) => {
-    // Ignore fs/path modules in browser bundle
+    // Ignore fs/path/crypto modules in browser bundle
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         path: false,
+        crypto: false,
         "lightningcss": false,
+        "better-sqlite3": false,
+        "sql.js": false,
+        "node-forge": false,
+        "selfsigned": false,
       };
     }
     // Exclude logs, .next, gitbook subapp from watcher
     config.watchOptions = { ...config.watchOptions, ignored: /[\\/](logs|\.next|gitbook|cli)[\\/]/ };
 
-    // On Vercel, handle CSS processing without native modules
+    // On Vercel, aggressive module exclusion
     if (process.env.VERCEL) {
       // Skip CSS optimization to avoid lightningcss requirement
       config.optimization = config.optimization || {};
       config.optimization.minimize = false;
 
+      // Exclude native modules from webpack processing entirely
+      const nativeModules = ['better-sqlite3', 'sql.js', 'lightningcss', '@tailwindcss/postcss', 'node-forge'];
+      config.externals = config.externals || [];
+      if (!Array.isArray(config.externals)) {
+        config.externals = [config.externals];
+      }
+      config.externals.push((ctx, req, cb) => {
+        if (nativeModules.some(m => req === m || req.startsWith(m + '/'))) {
+          return cb(null, `commonjs ${req}`);
+        }
+        cb();
+      });
+
+      // Remove problematic loaders
       config.module.rules.forEach(rule => {
-        // Skip CSS loaders that require lightningcss
         if (rule.test && (rule.test.toString().includes('css') || rule.test.toString().includes('postcss'))) {
           if (rule.use && Array.isArray(rule.use)) {
             rule.use = rule.use.filter(u => {
