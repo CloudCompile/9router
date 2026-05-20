@@ -6,6 +6,20 @@ import { DATA_DIR } from "@/lib/dataDir";
 
 function loadJwtSecret() {
   if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+
+  // On Vercel, /tmp is isolated per Lambda container — each invocation may generate a
+  // different random secret, making cookies from login invalid on auth check.
+  // Derive a stable secret from the deployment ID so all containers agree.
+  if (process.env.VERCEL) {
+    const seed = [
+      process.env.VERCEL_DEPLOYMENT_ID,
+      process.env.VERCEL_PROJECT_PRODUCTION_URL,
+      process.env.VERCEL_GIT_COMMIT_SHA,
+      "9router-jwt-v1",
+    ].filter(Boolean).join(":");
+    return crypto.createHash("sha256").update(seed).digest("hex");
+  }
+
   const file = path.join(DATA_DIR, "jwt-secret");
   try {
     return fs.readFileSync(file, "utf8").trim();
