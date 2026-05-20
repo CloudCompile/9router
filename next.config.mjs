@@ -24,6 +24,10 @@ const nextConfig = {
     root: tracingRoot
   },
   outputFileTracingRoot: tracingRoot,
+  outputFileTracingIncludes: {
+    // Bundle sql-wasm.wasm into every serverless function so sql.js can load it
+    "**": ["./node_modules/sql.js/dist/sql-wasm.wasm", "./public/sql-wasm.wasm"],
+  },
   outputFileTracingExcludes: {
     "*": ["./gitbook/**/*", "./cli/**/*", "./tests/**/*"]
   },
