@@ -383,7 +383,7 @@ async function intercept(req, res, bodyBuffer, mappedModel) {
     // 4 + 5: Re-encode response as AWS EventStream binary
     res.writeHead(routerRes.status, {
       "Content-Type": "application/vnd.amazon.eventstream",
-      "x-amzn-requestid": `mitm-${Date.now()}`,
+      "x-amzn-requestid": `router-${Date.now()}`,
       "x-amz-id-2": "router",
       "Transfer-Encoding": "chunked",
     });

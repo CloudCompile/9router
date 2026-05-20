@@ -1,5 +1,5 @@
 // CJS reader for Traffic Router standalone process. Reads routerAlias from JSON cache
-// at $DATA_DIR/mitm/aliases.json (synced by app from SQLite on startup + writes).
+// at $DATA_DIR/traffic-router/aliases.json (synced by app from SQLite on startup + writes).
 // JSON-only: no SQLite native binding required in Traffic Router bundle.
 const fs = require("fs");
 const path = require("path");

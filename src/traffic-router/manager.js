@@ -48,7 +48,7 @@ const MITM_RESTART_RESET_MS = 60000;
 
 let mitmRestartCount = 0;
 let mitmLastStartTime = 0;
-let mitmIsRestarting = false;
+let routerIsRestarting = false;
 
 function resolveBundledServerPath() {
   if (process.env.ROUTER_SERVER_PATH) return process.env.ROUTER_SERVER_PATH;
@@ -398,8 +398,8 @@ async function getTrafficRouterStatus() {
   return { running, pid, certExists, certTrusted, dnsStatus };
 }
 
-async function scheduleMitmRestart(apiKey) {
-  if (mitmIsRestarting) return;
+async function scheduleRouterRestart(apiKey) {
+  if (routerIsRestarting) return;
 
   const aliveMs = Date.now() - mitmLastStartTime;
   if (aliveMs >= MITM_RESTART_RESET_MS) mitmRestartCount = 0;
@@ -412,7 +412,7 @@ async function scheduleMitmRestart(apiKey) {
   const attempt = mitmRestartCount;
   const delay = MITM_RESTART_DELAYS_MS[Math.min(attempt, MITM_RESTART_DELAYS_MS.length - 1)];
   mitmRestartCount++;
-  mitmIsRestarting = true;
+  routerIsRestarting = true;
 
   log(`Restarting in ${delay / 1000}s... (${mitmRestartCount}/${MITM_MAX_RESTARTS})`);
   await new Promise((r) => setTimeout(r, delay));
@@ -421,24 +421,24 @@ async function scheduleMitmRestart(apiKey) {
     const settings = _getSettings ? await _getSettings() : null;
     if (settings && !settings.routerEnabled) {
       log("Traffic Router disabled, skipping restart");
-      mitmIsRestarting = false;
+      routerIsRestarting = false;
       return;
     }
     const password = getCachedPassword() || await loadEncryptedPassword();
     if (!password && !IS_WIN) {
       err("No cached password, cannot auto-restart");
-      mitmIsRestarting = false;
+      routerIsRestarting = false;
       return;
     }
     await startServer(apiKey, password);
     log("🔄 Restarted successfully");
     mitmRestartCount = 0;
-    mitmIsRestarting = false;
+    routerIsRestarting = false;
   } catch (e) {
     err(`Restart attempt ${mitmRestartCount}/${MITM_MAX_RESTARTS} failed: ${e.message}`);
-    mitmIsRestarting = false;
+    routerIsRestarting = false;
     // Schedule next retry
-    scheduleMitmRestart(apiKey);
+    scheduleRouterRestart(apiKey);
   }
 }
 
@@ -652,7 +652,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
       if (!IS_WIN && (msg.includes("incorrect password") || msg.includes("no password was provided"))) {
         setCachedPassword(null);
         clearEncryptedPassword();
-        mitmIsRestarting = true; // prevent scheduleMitmRestart from firing
+        routerIsRestarting = true; // prevent scheduleRouterRestart from firing
       }
     });
     serverProcess.on("exit", (code) => {
@@ -661,7 +661,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
       serverPid = null;
       try { fs.unlinkSync(PID_FILE); } catch { /* ignore */ }
       // Auto-restart on unexpected exit
-      if (code !== 0 && !mitmIsRestarting) scheduleMitmRestart(apiKey);
+      if (code !== 0 && !routerIsRestarting) scheduleRouterRestart(apiKey);
     });
   }
 
@@ -695,7 +695,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
  */
 async function stopServer(sudoPassword) {
   // Prevent auto-restart from triggering on intentional stop
-  mitmIsRestarting = true;
+  routerIsRestarting = true;
   mitmRestartCount = 0;
   log("⏹ Stopping server...");
 
@@ -748,7 +748,7 @@ async function stopServer(sudoPassword) {
 
   try { fs.unlinkSync(PID_FILE); } catch { /* ignore */ }
   await saveMitmSettings(false, null);
-  mitmIsRestarting = false;
+  routerIsRestarting = false;
 
   return { running: false, pid: null };
 }
