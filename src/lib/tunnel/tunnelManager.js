@@ -3,7 +3,7 @@ import { loadState, saveState, generateShortId, clearPid } from "./state.js";
 import { spawnQuickTunnel, killCloudflared, isCloudflaredRunning, setUnexpectedExitHandler } from "./cloudflared.js";
 import { startFunnel, stopFunnel, isTailscaleRunning, isTailscaleRunningStrict, isTailscaleLoggedIn, startLogin, startDaemonWithPassword, provisionCert } from "./tailscale.js";
 import { getSettings, updateSettings } from "@/lib/localDb";
-import { getCachedPassword, loadEncryptedPassword, initDbHooks } from "@/mitm/manager";
+import { getCachedPassword, loadEncryptedPassword, initDbHooks } from "@/traffic-router/manager";
 import { waitForHealth, probeUrlAlive } from "./networkProbe.js";
 
 initDbHooks(getSettings, updateSettings);

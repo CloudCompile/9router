@@ -4,15 +4,15 @@ import { useState, useEffect } from "react";
 import { TRAFFIC_ROUTER_TOOLS } from "@/shared/constants/cliTools";
 import { getModelsByProviderId } from "@/shared/constants/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
-import { MitmServerCard, MitmToolCard } from "@/app/(dashboard)/dashboard/cli-tools/components";
+import { RouterServerCard, RouterToolCard } from "@/app/(dashboard)/dashboard/cli-tools/components";
 
-export default function MitmPageClient() {
+export default function TrafficRouterPageClient() {
   const [connections, setConnections] = useState([]);
   const [apiKeys, setApiKeys] = useState([]);
   const [modelAliases, setModelAliases] = useState({});
   const [cloudEnabled, setCloudEnabled] = useState(false);
   const [expandedTool, setExpandedTool] = useState(null);
-  const [mitmStatus, setMitmStatus] = useState({ running: false, certExists: false, dnsStatus: {}, hasCachedPassword: false });
+  const [routerStatus, setRouterStatus] = useState({ running: false, certExists: false, dnsStatus: {}, hasCachedPassword: false });
 
   useEffect(() => {
     fetchConnections();
@@ -72,7 +72,7 @@ export default function MitmPageClient() {
     );
   };
 
-  const mitmTools = Object.entries(TRAFFIC_ROUTER_TOOLS);
+  const routerTools = Object.entries(TRAFFIC_ROUTER_TOOLS);
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -83,32 +83,32 @@ export default function MitmPageClient() {
         </p>
       </div>
 
-      {/* MITM Server Card */}
-      <MitmServerCard
+      {/* Traffic Router Server Card */}
+      <RouterServerCard
         apiKeys={apiKeys}
         cloudEnabled={cloudEnabled}
-        onStatusChange={setMitmStatus}
+        onStatusChange={setRouterStatus}
       />
 
       {/* Tool Cards */}
       <div className="grid gap-3 sm:gap-4">
-        {mitmTools.map(([toolId, tool]) => (
-          <MitmToolCard
+        {routerTools.map(([toolId, tool]) => (
+          <RouterToolCard
             key={toolId}
             tool={tool}
             isExpanded={expandedTool === toolId}
             onToggle={() => setExpandedTool(expandedTool === toolId ? null : toolId)}
-            serverRunning={mitmStatus.running}
-            dnsActive={mitmStatus.dnsStatus?.[toolId] || false}
-            hasCachedPassword={mitmStatus.hasCachedPassword || false}
-            needsSudoPassword={mitmStatus.needsSudoPassword !== false}
-            isWin={mitmStatus.isWin === true}
+            serverRunning={routerStatus.running}
+            dnsActive={routerStatus.dnsStatus?.[toolId] || false}
+            hasCachedPassword={routerStatus.hasCachedPassword || false}
+            needsSudoPassword={routerStatus.needsSudoPassword !== false}
+            isWin={routerStatus.isWin === true}
             apiKeys={apiKeys}
             activeProviders={getActiveProviders()}
             hasActiveProviders={hasActiveProviders()}
             modelAliases={modelAliases}
             cloudEnabled={cloudEnabled}
-            onDnsChange={(data) => setMitmStatus(prev => ({ ...prev, dnsStatus: data.dnsStatus ?? prev.dnsStatus }))}
+            onDnsChange={(data) => setRouterStatus(prev => ({ ...prev, dnsStatus: data.dnsStatus ?? prev.dnsStatus }))}
           />
         ))}
       </div>

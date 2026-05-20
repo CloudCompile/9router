@@ -13,7 +13,7 @@ const IS_MAC = process.platform === "darwin";
 const { generateCert } = require("./cert/generate");
 const { installCert, uninstallCert } = require("./cert/install");
 const { isCertExpired } = require("./cert/rootCA");
-const { DATA_DIR, MITM_DIR } = require("./paths");
+const { DATA_DIR, ROUTER_DIR } = require("./paths");
 const { log, err } = require("./logger");
 const { LSOF_BIN } = require("./config");
 
@@ -28,7 +28,7 @@ async function resolveMitmRouterBaseUrl() {
   if (!_getSettings) return DEFAULT_ROUTER_BASE_URL;
   try {
     const s = await _getSettings();
-    const raw = s && s.mitmRouterBaseUrl != null ? String(s.mitmRouterBaseUrl).trim() : "";
+    const raw = s && s.routerBaseUrl != null ? String(s.routerBaseUrl).trim() : "";
     if (!raw) return DEFAULT_ROUTER_BASE_URL;
     const u = new URL(raw);
     if (u.protocol !== "http:" && u.protocol !== "https:") return DEFAULT_ROUTER_BASE_URL;
@@ -40,7 +40,7 @@ async function resolveMitmRouterBaseUrl() {
 
 const MITM_PORT = 443;
 const MITM_WIN_NODE_PORT = 8443;
-const PID_FILE = path.join(MITM_DIR, ".mitm.pid");
+const PID_FILE = path.join(ROUTER_DIR, ".mitm.pid");
 
 const MITM_MAX_RESTARTS = 5;
 const MITM_RESTART_DELAYS_MS = [5000, 10000, 20000, 30000, 60000];
@@ -51,7 +51,7 @@ let mitmLastStartTime = 0;
 let mitmIsRestarting = false;
 
 function resolveBundledServerPath() {
-  if (process.env.MITM_SERVER_PATH) return process.env.MITM_SERVER_PATH;
+  if (process.env.ROUTER_SERVER_PATH) return process.env.ROUTER_SERVER_PATH;
   const sibling = path.join(__dirname, "server.js");
   if (fs.existsSync(sibling)) return sibling;
   const fromCwd = path.join(process.cwd(), "src", "mitm", "server.js");
@@ -61,8 +61,8 @@ function resolveBundledServerPath() {
   return fromCwd;
 }
 
-// Copy bundled server.js into DATA_DIR so MITM doesn't lock node_modules
-// (prevents EBUSY on `npm i -g 9router@latest` while MITM is running).
+// Copy bundled server.js into DATA_DIR so Traffic Router doesn't lock node_modules
+// (prevents EBUSY on `npm i -g 9router@latest` while Traffic Router is running).
 function ensureRuntimeServer(bundledPath) {
   try {
     if (!bundledPath || !fs.existsSync(bundledPath)) return bundledPath;
@@ -193,7 +193,7 @@ function initDbHooks(getSettingsFn, updateSettingsFn) {
 async function saveMitmSettings(enabled, password) {
   if (!_updateSettings) return;
   try {
-    const updates = { mitmEnabled: enabled };
+    const updates = { routerEnabled: enabled };
     if (password) updates.mitmSudoEncrypted = encryptPassword(password);
     await _updateSettings(updates);
   } catch (e) {
@@ -243,13 +243,13 @@ async function loadDnsToolState() {
 }
 
 /**
- * Re-apply DNS for tools previously enabled — called on app startup after MITM running.
+ * Re-apply DNS for tools previously enabled — called on app startup after Traffic Router running.
  */
 async function restoreToolDNS(sudoPassword) {
   const state = await loadDnsToolState();
   const password = sudoPassword || getCachedPassword() || await loadEncryptedPassword();
   for (const [tool, enabled] of Object.entries(state)) {
-    if (!enabled || !TOOL_HOSTS[tool]) continue;
+    if (!enabled || !ROUTER_HOSTS[tool]) continue;
     try {
       await addDNSEntry(tool, password);
     } catch (e) {
@@ -369,9 +369,9 @@ function pollMitmHealth(timeoutMs, port = MITM_PORT) {
 }
 
 /**
- * Get full MITM status including per-tool DNS status
+ * Get full Traffic Router status including per-tool DNS status
  */
-async function getMitmStatus() {
+async function getTrafficRouterStatus() {
   let running = serverProcess !== null && !serverProcess.killed;
   let pid = serverPid;
 
@@ -390,7 +390,7 @@ async function getMitmStatus() {
   }
 
   const dnsStatus = checkAllDNSStatus();
-  const rootCACertPath = path.join(MITM_DIR, "rootCA.crt");
+  const rootCACertPath = path.join(ROUTER_DIR, "rootCA.crt");
   const certExists = fs.existsSync(rootCACertPath);
   const { checkCertInstalled } = require("./cert/install");
   const certTrusted = certExists ? await checkCertInstalled(rootCACertPath) : false;
@@ -419,8 +419,8 @@ async function scheduleMitmRestart(apiKey) {
 
   try {
     const settings = _getSettings ? await _getSettings() : null;
-    if (settings && !settings.mitmEnabled) {
-      log("MITM disabled, skipping restart");
+    if (settings && !settings.routerEnabled) {
+      log("Traffic Router disabled, skipping restart");
       mitmIsRestarting = false;
       return;
     }
@@ -443,7 +443,7 @@ async function scheduleMitmRestart(apiKey) {
 }
 
 /**
- * Start MITM server only (cert + server, no DNS)
+ * Start Traffic Router server only (cert + server, no DNS)
  */
 async function killPort443Owner(owner, sudoPassword) {
   if (!owner || !owner.pid) return;
@@ -483,7 +483,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
   }
 
   if (serverProcess && !serverProcess.killed) {
-    throw new Error("MITM server is already running");
+    throw new Error("Traffic Router server is already running");
   }
 
   await killLeftoverMitm(sudoPassword);
@@ -510,8 +510,8 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
   }
 
   // Step 1: Generate Root CA if missing or expired
-  const rootCACertPath = path.join(MITM_DIR, "rootCA.crt");
-  const rootCAKeyPath = path.join(MITM_DIR, "rootCA.key");
+  const rootCACertPath = path.join(ROUTER_DIR, "rootCA.crt");
+  const rootCAKeyPath = path.join(ROUTER_DIR, "rootCA.key");
   const certExists = fs.existsSync(rootCACertPath) && fs.existsSync(rootCAKeyPath);
 
   if (!certExists || isCertExpired(rootCACertPath)) {
@@ -556,7 +556,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
     log(`[ROUTER] server.js missing at ${effectiveServerPath} → recopying`);
     effectiveServerPath = ensureRuntimeServer(resolveBundledServerPath());
     if (!effectiveServerPath || !fs.existsSync(effectiveServerPath)) {
-      throw new Error(`MITM server.js not found at ${effectiveServerPath}. Reinstall 9router.`);
+      throw new Error(`Traffic Router server.js not found at ${effectiveServerPath}. Reinstall 9router.`);
     }
   }
   const mitmRouterBase = await resolveMitmRouterBaseUrl();
@@ -671,7 +671,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
     const processUsing443 = getProcessUsingPort443();
     const portInfo = processUsing443 ? ` Port 443 already in use by ${processUsing443}.` : "";
     const reason = startError || `Check sudo password or port 443 access.${portInfo}`;
-    throw new Error(`MITM server failed to start. ${reason}`);
+    throw new Error(`Traffic Router server failed to start. ${reason}`);
   }
 
   if (_updateSettings) await _updateSettings({ mitmCertInstalled: true }).catch(() => { });
@@ -691,7 +691,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
 }
 
 /**
- * Stop MITM server — removes ALL tool DNS entries first, then kills server
+ * Stop Traffic Router server — removes ALL tool DNS entries first, then kills server
  */
 async function stopServer(sudoPassword) {
   // Prevent auto-restart from triggering on intentional stop
@@ -757,8 +757,8 @@ async function stopServer(sudoPassword) {
  * Enable DNS for a specific tool (requires server running)
  */
 async function enableToolDNS(tool, sudoPassword) {
-  const status = await getMitmStatus();
-  if (!status.running) throw new Error("MITM server is not running. Start the server first.");
+  const status = await getTrafficRouterStatus();
+  if (!status.running) throw new Error("Traffic Router server is not running. Start the server first.");
 
   const password = sudoPassword || getCachedPassword() || await loadEncryptedPassword();
   await addDNSEntry(tool, password);
@@ -780,7 +780,7 @@ async function disableToolDNS(tool, sudoPassword) {
  * Install Root CA to system trust store (standalone, no server start)
  */
 async function trustCert(sudoPassword) {
-  const rootCACertPath = path.join(MITM_DIR, "rootCA.crt");
+  const rootCACertPath = path.join(ROUTER_DIR, "rootCA.crt");
   if (!fs.existsSync(rootCACertPath)) throw new Error("Root CA not found. Start server first to generate it.");
   const { installCert } = require("./cert/install");
   if (!IS_WIN && !IS_MAC && !isSudoAvailable()) {
@@ -794,18 +794,18 @@ async function trustCert(sudoPassword) {
 }
 
 // Legacy aliases for backward compatibility
-const startMitm = startServer;
+const startTrafficRouter = startServer;
 const stopMitm = stopServer;
 
 module.exports = {
-  getMitmStatus,
+  getTrafficRouterStatus,
   startServer,
   stopServer,
   enableToolDNS,
   disableToolDNS,
   trustCert,
   // Legacy
-  startMitm,
+  startTrafficRouter,
   stopMitm,
   getCachedPassword,
   setCachedPassword,

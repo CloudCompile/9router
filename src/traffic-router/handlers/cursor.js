@@ -1,5 +1,5 @@
 /**
- * Cursor MITM handler — coming soon
+ * Cursor Traffic Router handler — coming soon
  * This feature is currently under development.
  */
 async function intercept(req, res) {

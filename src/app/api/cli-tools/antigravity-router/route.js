@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  getMitmStatus,
+  getTrafficRouterStatus,
   startServer,
   stopServer,
   enableToolDNS,
@@ -11,14 +11,14 @@ import {
   loadEncryptedPassword,
   isSudoPasswordRequired,
   initDbHooks,
-} from "@/mitm/manager";
+} from "@/traffic-router/manager";
 import { getSettings, updateSettings } from "@/lib/localDb";
 
 initDbHooks(getSettings, updateSettings);
 
 const DEFAULT_ROUTER_BASE_URL = "http://localhost:20128";
 
-function normalizeMitmRouterBaseUrlInput(input) {
+function normalizeRouterBaseUrlInput(input) {
   if (input == null || String(input).trim() === "") {
     return DEFAULT_ROUTER_BASE_URL;
   }
@@ -27,10 +27,10 @@ function normalizeMitmRouterBaseUrlInput(input) {
   try {
     u = new URL(t);
   } catch {
-    throw new Error("Invalid MITM router URL");
+    throw new Error("Invalid Traffic Router router URL");
   }
   if (u.protocol !== "http:" && u.protocol !== "https:") {
-    throw new Error("MITM router URL must use http or https");
+    throw new Error("Traffic Router router URL must use http or https");
   }
   return t;
 }
@@ -64,10 +64,10 @@ function checkPrivilege(pwd) {
   return !!pwd;
 }
 
-// GET - Full MITM status (server + per-tool DNS)
+// GET - Full Traffic Router status (server + per-tool DNS)
 export async function GET() {
   try {
-    const status = await getMitmStatus();
+    const status = await getTrafficRouterStatus();
     const settings = await getSettings();
     const hasCachedPassword = !!getCachedPassword() || !!(await loadEncryptedPassword());
     return NextResponse.json({
@@ -80,20 +80,20 @@ export async function GET() {
       isWin,
       needsSudoPassword: !isWin && !hasCachedPassword && isSudoPasswordRequired(),
       isAdmin: checkIsAdmin(),
-      mitmRouterBaseUrl:
-        (settings.mitmRouterBaseUrl && String(settings.mitmRouterBaseUrl).trim()) ||
+      routerBaseUrl:
+        (settings.routerBaseUrl && String(settings.routerBaseUrl).trim()) ||
         DEFAULT_ROUTER_BASE_URL,
     });
   } catch (error) {
-    console.log("Error getting MITM status:", error.message);
-    return NextResponse.json({ error: "Failed to get MITM status" }, { status: 500 });
+    console.log("Error getting Traffic Router status:", error.message);
+    return NextResponse.json({ error: "Failed to get Traffic Router status" }, { status: 500 });
   }
 }
 
-// POST - Start MITM server (cert + server, no DNS)
+// POST - Start Traffic Router server (cert + server, no DNS)
 export async function POST(request) {
   try {
-    const { apiKey, sudoPassword, mitmRouterBaseUrl, forceKillPort443 } = await request.json();
+    const { apiKey, sudoPassword, routerBaseUrl, forceKillPort443 } = await request.json();
     const pwd = getPassword(sudoPassword) || await loadEncryptedPassword() || "";
 
     if (!apiKey || requiresSudoPassword(pwd)) {
@@ -105,18 +105,18 @@ export async function POST(request) {
 
     if (!checkPrivilege(pwd)) {
       return NextResponse.json(
-        { error: isWin ? "Administrator required — restart 9Router as Administrator" : "Root or sudo password required to start MITM" },
+        { error: isWin ? "Administrator required — restart 9Router as Administrator" : "Root or sudo password required to start routing" },
         { status: 403 }
       );
     }
 
-    if (mitmRouterBaseUrl !== undefined && mitmRouterBaseUrl !== null) {
+    if (routerBaseUrl !== undefined && routerBaseUrl !== null) {
       try {
-        const normalized = normalizeMitmRouterBaseUrlInput(mitmRouterBaseUrl);
-        await updateSettings({ mitmRouterBaseUrl: normalized });
+        const normalized = normalizeRouterBaseUrlInput(routerBaseUrl);
+        await updateSettings({ routerBaseUrl: normalized });
       } catch (e) {
         return NextResponse.json(
-          { error: e.message || "Invalid MITM router URL" },
+          { error: e.message || "Invalid Traffic Router router URL" },
           { status: 400 },
         );
       }
@@ -127,18 +127,18 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, running: result.running, pid: result.pid });
   } catch (error) {
-    console.log("Error starting MITM server:", error.message);
+    console.log("Error starting Traffic Router server:", error.message);
     if (error.code === "PORT_443_BUSY") {
       return NextResponse.json(
         { error: error.message, code: "PORT_443_BUSY", portOwner: error.portOwner },
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: error.message || "Failed to start MITM server" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to start Traffic Router server" }, { status: 500 });
   }
 }
 
-// DELETE - Stop MITM server (removes all DNS first, then kills server)
+// DELETE - Stop Traffic Router server (removes all DNS first, then kills server)
 export async function DELETE(request) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -154,8 +154,8 @@ export async function DELETE(request) {
 
     return NextResponse.json({ success: true, running: false });
   } catch (error) {
-    console.log("Error stopping MITM server:", error.message);
-    return NextResponse.json({ error: error.message || "Failed to stop MITM server" }, { status: 500 });
+    console.log("Error stopping Traffic Router server:", error.message);
+    return NextResponse.json({ error: error.message || "Failed to stop Traffic Router server" }, { status: 500 });
   }
 }
 
@@ -185,7 +185,7 @@ export async function PATCH(request) {
     } else if (action === "trust-cert") {
       await trustCert(pwd);
       if (!isWin && sudoPassword) setCachedPassword(sudoPassword);
-      const status = await getMitmStatus();
+      const status = await getTrafficRouterStatus();
       return NextResponse.json({ success: true, certTrusted: status.certTrusted });
     } else {
       return NextResponse.json({ error: "action must be enable, disable, or trust-cert" }, { status: 400 });
@@ -193,7 +193,7 @@ export async function PATCH(request) {
 
     if (!isWin && sudoPassword) setCachedPassword(sudoPassword);
 
-    const status = await getMitmStatus();
+    const status = await getTrafficRouterStatus();
     return NextResponse.json({ success: true, dnsStatus: status.dnsStatus });
   } catch (error) {
     console.log("Error toggling DNS:", error.message);

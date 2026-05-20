@@ -1,5 +1,5 @@
-import MitmPageClient from "./MitmPageClient";
+import TrafficRouterPageClient from "./TrafficRouterPageClient";
 
-export default function MitmPage() {
-  return <MitmPageClient />;
+export default function TrafficRouterPage() {
+  return <TrafficRouterPageClient />;
 }

@@ -16,17 +16,17 @@ import {
   RESTART_COOLDOWN_MS, NETWORK_SETTLE_MS,
   WATCHDOG_INTERVAL_MS, NETWORK_CHECK_INTERVAL_MS,
 } from "@/lib/tunnel/tunnelConfig";
-import { getMitmStatus, startMitm, loadEncryptedPassword, initDbHooks, restoreToolDNS, removeAllDNSEntriesSync } from "@/mitm/manager";
-import { syncToJson as syncMitmAliasCache } from "@/lib/mitmAliasCache";
+import { getTrafficRouterStatus, startTrafficRouter, loadEncryptedPassword, initDbHooks, restoreToolDNS, removeAllDNSEntriesSync } from "@/traffic-router/manager";
+import { syncToJson as syncTrafficRouterAliasCache } from "@/lib/routerAliasCache";
 
 // Inject correct paths and DB hooks into manager.js (CJS) from ESM context
-(function bootstrapMitm() {
-  if (!process.env.MITM_SERVER_PATH) {
+(function bootstrapRouter() {
+  if (!process.env.ROUTER_SERVER_PATH) {
     try {
       const thisFile = fileURLToPath(import.meta.url);
       const appSrc = dirname(dirname(thisFile));
-      const candidate = join(appSrc, "mitm", "server.js");
-      if (existsSync(candidate)) process.env.MITM_SERVER_PATH = candidate;
+      const candidate = join(appSrc, "traffic-router", "server.js");
+      if (existsSync(candidate)) process.env.ROUTER_SERVER_PATH = candidate;
     } catch { /* ignore */ }
   }
   try { initDbHooks(getSettings, updateSettings); } catch { /* ignore */ }
@@ -42,7 +42,7 @@ const g = global.__appSingleton ??= {
   lastNetworkFingerprint: null,
   lastWatchdogTick: Date.now(),
   lastOnline: null,
-  mitmStartInProgress: false,
+  routerStartInProgress: false,
   tunnelAutoResumed: false,
   tailscaleAutoResumed: false,
 };
@@ -87,38 +87,38 @@ export async function initializeApp() {
 
     ensureCloudflared().catch(() => {});
 
-    // Sync mitmAlias DB → JSON cache so standalone MITM server can read it
-    syncMitmAliasCache().catch(() => {});
+    // Sync routerAlias DB → JSON cache so standalone Traffic Router server can read it
+    syncTrafficRouterAliasCache().catch(() => {});
 
     startWatchdog();
     startNetworkMonitor();
-    autoStartMitm();
+    autoStartRouter();
   } catch (error) {
     console.error("[InitApp] Error:", error);
   }
 }
 
-async function autoStartMitm() {
-  if (g.mitmStartInProgress) return;
-  g.mitmStartInProgress = true;
+async function autoStartRouter() {
+  if (g.routerStartInProgress) return;
+  g.routerStartInProgress = true;
   try {
     const settings = await getSettings();
-    if (!settings.mitmEnabled) return;
-    const mitmStatus = await getMitmStatus();
-    if (mitmStatus.running) return;
+    if (!settings.routerEnabled) return;
+    const routerStatus = await getTrafficRouterStatus();
+    if (routerStatus.running) return;
 
     const password = await loadEncryptedPassword();
     if (!password && process.platform !== "win32") {
-      console.log("[InitApp] MITM was enabled but no saved password found, skipping auto-start");
+      console.log("[InitApp] Traffic Router was enabled but no saved password found, skipping auto-start");
       return;
     }
 
     const keys = await getApiKeys();
     const activeKey = keys.find(k => k.isActive !== false);
 
-    console.log("[InitApp] MITM was enabled, auto-starting...");
-    await startMitm(activeKey?.key || "sk_9router", password);
-    console.log("[InitApp] MITM auto-started");
+    console.log("[InitApp] Traffic Router was enabled, auto-starting...");
+    await startTrafficRouter(activeKey?.key || "sk_9router", password);
+    console.log("[InitApp] Traffic Router auto-started");
     try {
       await restoreToolDNS(password);
       console.log("[InitApp] DNS restored from saved state");
@@ -126,9 +126,9 @@ async function autoStartMitm() {
       console.log("[InitApp] DNS restore failed:", e.message);
     }
   } catch (err) {
-    console.log("[InitApp] MITM auto-start failed:", err.message);
+    console.log("[InitApp] Traffic Router auto-start failed:", err.message);
   } finally {
-    g.mitmStartInProgress = false;
+    g.routerStartInProgress = false;
   }
 }
 

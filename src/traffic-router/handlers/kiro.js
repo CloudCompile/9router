@@ -348,7 +348,7 @@ async function pipeOpenAIasEventStream(routerRes, res) {
   }
 }
 
-// ─── MITM intercept entry point ───────────────────────────────────────────────
+// ─── Traffic Router intercept entry point ───────────────────────────────────────────────
 /**
  * Intercept Kiro IDE CodeWhisperer request:
  *   1. Parse CodeWhisperer binary/JSON body

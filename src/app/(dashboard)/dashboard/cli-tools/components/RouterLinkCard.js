@@ -5,9 +5,9 @@ import { Card } from "@/shared/components";
 import Image from "next/image";
 
 /**
- * Clickable card for MITM tools — navigates to /dashboard/traffic-router on click.
+ * Clickable card for Traffic Router tools — navigates to /dashboard/traffic-router on click.
  */
-export default function MitmLinkCard({ tool }) {
+export default function RouterLinkCard({ tool }) {
   return (
     <Link href="/dashboard/traffic-router" className="block">
       <Card padding="sm" className="overflow-hidden hover:border-primary/50 transition-colors cursor-pointer">
@@ -27,7 +27,7 @@ export default function MitmLinkCard({ tool }) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="font-medium text-sm">{tool.name}</h3>
-                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full">MITM</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full">Traffic Router</span>
               </div>
               <p className="text-xs text-text-muted truncate">{tool.description}</p>
             </div>

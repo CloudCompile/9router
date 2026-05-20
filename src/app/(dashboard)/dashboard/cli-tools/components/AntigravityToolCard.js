@@ -88,7 +88,7 @@ export default function AntigravityToolCard({
     }
   };
 
-  // MITM elevation is decided by the server OS, not by this browser's OS.
+  // Traffic Router elevation is decided by the server OS, not by this browser's OS.
   const serverIsWindows = status?.isWin === true;
   const canRunWithoutPassword = serverIsWindows || status?.hasCachedPassword || status?.needsSudoPassword === false;
 
@@ -129,7 +129,7 @@ export default function AntigravityToolCard({
       const data = await res.json();
       if (res.ok) {
         setStartingStep(null);
-        setMessage({ type: "success", text: "MITM started" });
+        setMessage({ type: "success", text: "Traffic Router started" });
         setShowPasswordModal(false);
         setSudoPassword("");
         fetchStatus();
@@ -157,7 +157,7 @@ export default function AntigravityToolCard({
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({ type: "success", text: "MITM stopped" });
+        setMessage({ type: "success", text: "Traffic Router stopped" });
         setShowPasswordModal(false);
         setSudoPassword("");
         fetchStatus();
@@ -299,7 +299,7 @@ export default function AntigravityToolCard({
                 className="px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 font-medium text-sm flex items-center gap-2 hover:bg-red-500/20 transition-colors disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[18px]">stop_circle</span>
-                Stop MITM
+                Stop Routing
               </button>
             ) : (
               <button
@@ -308,7 +308,7 @@ export default function AntigravityToolCard({
                 className="px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary font-medium text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="material-symbols-outlined text-[18px]">play_circle</span>
-                Start MITM
+                Start Routing
               </button>
             )}
           </div>
@@ -391,7 +391,7 @@ export default function AntigravityToolCard({
           {!isRunning && serverIsWindows && (
             <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-yellow-500/10 text-yellow-600 border border-yellow-500/20">
               <span className="material-symbols-outlined text-[14px]">warning</span>
-              <span>Windows: Run terminal (9Router) as Administrator to enable MITM</span>
+              <span>Windows: Run terminal (9Router) as Administrator to enable routing</span>
             </div>
           )}
 

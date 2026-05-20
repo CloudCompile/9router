@@ -1,6 +1,6 @@
-// CJS reader for MITM standalone process. Reads mitmAlias from JSON cache
+// CJS reader for Traffic Router standalone process. Reads routerAlias from JSON cache
 // at $DATA_DIR/mitm/aliases.json (synced by app from SQLite on startup + writes).
-// JSON-only: no SQLite native binding required in MITM bundle.
+// JSON-only: no SQLite native binding required in Traffic Router bundle.
 const fs = require("fs");
 const path = require("path");
 const { DATA_DIR } = require("./paths");
@@ -14,9 +14,9 @@ function readCache() {
   } catch { return null; }
 }
 
-function getMitmAlias(toolName) {
+function getRouterAlias(toolName) {
   const all = readCache();
   return all?.[toolName] || null;
 }
 
-module.exports = { getMitmAlias };
+module.exports = { getRouterAlias };

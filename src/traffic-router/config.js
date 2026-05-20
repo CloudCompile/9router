@@ -28,7 +28,7 @@ const URL_PATTERNS = {
   cursor: ["/BidiAppend", "/RunSSE", "/RunPoll", "/Run"],
 };
 
-// Synonym map: rawModel from request → canonical alias key in mitmAlias DB
+// Synonym map: rawModel from request → canonical alias key in routerAlias DB
 const MODEL_SYNONYMS = {
   antigravity: { "gemini-default": "gemini-3-flash" },
 };
