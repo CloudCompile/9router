@@ -2,17 +2,27 @@ import path from "node:path";
 import fs from "node:fs";
 import { DATA_DIR } from "@/lib/dataDir.js";
 
-export const DB_DIR = path.join(DATA_DIR, "db");
+// Handle in-memory mode or /tmp fallback
+const baseDir = DATA_DIR || "/tmp/.9router-inmem";
+export const DB_DIR = path.join(baseDir, "db");
 export const DATA_FILE = path.join(DB_DIR, "data.sqlite");
 export const BACKUPS_DIR = path.join(DB_DIR, "backups");
 export const LEGACY_FILES = {
-  main: path.join(DATA_DIR, "db.json"),
-  usage: path.join(DATA_DIR, "usage.json"),
-  disabled: path.join(DATA_DIR, "disabledModels.json"),
-  details: path.join(DATA_DIR, "request-details.json"),
+  main: path.join(baseDir, "db.json"),
+  usage: path.join(baseDir, "usage.json"),
+  disabled: path.join(baseDir, "disabledModels.json"),
+  details: path.join(baseDir, "request-details.json"),
 };
+
 export function ensureDirs() {
-  for (const dir of [DATA_DIR, DB_DIR, BACKUPS_DIR]) {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!baseDir) return; // In-memory mode
+  for (const dir of [baseDir, DB_DIR, BACKUPS_DIR]) {
+    try {
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      if (e?.code !== "EEXIST") {
+        console.warn(`[DB] Failed to create ${dir}: ${e.message}`);
+      }
+    }
   }
 }
