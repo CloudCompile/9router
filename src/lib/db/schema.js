@@ -150,8 +150,20 @@ export const TABLES = {
   },
 };
 
-export function buildCreateTableSql(name, def) {
-  const cols = Object.entries(def.columns).map(([k, v]) => `${k} ${v}`);
+export function buildCreateTableSql(name, def, isPostgres = false) {
+  const cols = Object.entries(def.columns).map(([k, v]) => {
+    let colDef = v;
+    if (isPostgres) {
+      // Convert SQLite syntax to PostgreSQL
+      colDef = colDef
+        .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, "SERIAL PRIMARY KEY")
+        .replace(/AUTOINCREMENT/g, "")
+        .replace(/TEXT NOT NULL/g, "VARCHAR NOT NULL")
+        .replace(/TEXT/g, "VARCHAR")
+        .replace(/REAL/g, "DECIMAL");
+    }
+    return `${k} ${colDef}`;
+  });
   if (def.primaryKey) cols.push(def.primaryKey);
   return `CREATE TABLE IF NOT EXISTS ${name} (${cols.join(", ")})`;
 }

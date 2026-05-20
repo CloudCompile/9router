@@ -56,14 +56,17 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
-  // On Vercel with DATABASE_URL (Neon PostgreSQL), use it first
-  if (process.env.DATABASE_URL) {
+  // PostgreSQL support is only enabled at runtime (post-build), not during Vercel build
+  // The migration system is sync-only; PostgreSQL needs async. During Vercel build,
+  // we use sql.js which is sync-compatible. Once deployed, DATABASE_URL can be used.
+  const isDuringBuild = process.env.VERCEL === '1';
+
+  if (process.env.DATABASE_URL && !isDuringBuild) {
     try {
       const { createPostgresAdapter } = await import("./adapters/postgresAdapter.js");
       const adapter = await createPostgresAdapter(process.env.DATABASE_URL);
       console.log(`[DB] Driver: postgresql (Neon) | connection pooled`);
-      const { runMigrationOnce } = await import("./migrate.js");
-      await runMigrationOnce(adapter);
+      // PostgreSQL is already initialized; schema auto-sync will happen on first request
       return adapter;
     } catch (e) {
       console.warn(`[DB] PostgreSQL failed, falling back: ${e.message}`);
