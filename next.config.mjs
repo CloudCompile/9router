@@ -12,7 +12,14 @@ const tracingRoot = process.env.NEXT_TRACING_ROOT_MODE === "workspace"
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   output: "standalone",
-  serverExternalPackages: ["better-sqlite3", "sql.js", "node:sqlite", "bun:sqlite"],
+  serverExternalPackages: [
+    // Database
+    "better-sqlite3", "sql.js", "node:sqlite", "bun:sqlite",
+    // CSS (only on non-Vercel)
+    "lightningcss", "@tailwindcss/postcss", "@tailwindcss/node",
+    // Crypto/SSL (optional dependencies)
+    "node-forge", "selfsigned"
+  ],
   turbopack: {
     root: tracingRoot
   },
@@ -29,35 +36,94 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Optimize headers and redirects
+  // Optimize headers and rewrites
   headers: async () => [
+    // Cache models and providers aggressively
     {
-      source: '/api/:path*',
+      source: '/api/(v1/)?models',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=86400' },
+        { key: 'CDN-Cache-Control', value: 'public, max-age=86400' },
+      ],
+    },
+    {
+      source: '/api/(v1/)?providers',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=1800, s-maxage=43200' },
+        { key: 'CDN-Cache-Control', value: 'public, max-age=43200' },
+      ],
+    },
+    // Cache health checks briefly
+    {
+      source: '/api/health',
       headers: [
         { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300' },
       ],
     },
+    // Default API cache
+    {
+      source: '/api/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=300, s-maxage=3600' },
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'X-XSS-Protection', value: '1; mode=block' },
+      ],
+    },
+    // Security headers for all pages
+    {
+      source: '/:path*',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'X-XSS-Protection', value: '1; mode=block' },
+      ],
+    },
   ],
   webpack: (config, { isServer }) => {
-    // Ignore fs/path modules in browser bundle
+    // Ignore fs/path/crypto modules in browser bundle
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         path: false,
+        crypto: false,
+        "lightningcss": false,
+        "better-sqlite3": false,
+        "sql.js": false,
+        "node-forge": false,
+        "selfsigned": false,
       };
     }
     // Exclude logs, .next, gitbook subapp from watcher
     config.watchOptions = { ...config.watchOptions, ignored: /[\\/](logs|\.next|gitbook|cli)[\\/]/ };
 
-    // On Vercel, ensure lightningcss issues don't block build
+    // On Vercel, aggressive module exclusion
     if (process.env.VERCEL) {
+      // Skip CSS optimization to avoid lightningcss requirement
+      config.optimization = config.optimization || {};
+      config.optimization.minimize = false;
+
+      // Exclude native modules from webpack processing entirely
+      const nativeModules = ['better-sqlite3', 'sql.js', 'lightningcss', '@tailwindcss/postcss', 'node-forge'];
+      config.externals = config.externals || [];
+      if (!Array.isArray(config.externals)) {
+        config.externals = [config.externals];
+      }
+      config.externals.push((ctx, req, cb) => {
+        if (nativeModules.some(m => req === m || req.startsWith(m + '/'))) {
+          return cb(null, `commonjs ${req}`);
+        }
+        cb();
+      });
+
+      // Remove problematic loaders
       config.module.rules.forEach(rule => {
-        if (rule.test && rule.test.toString().includes('css')) {
+        if (rule.test && (rule.test.toString().includes('css') || rule.test.toString().includes('postcss'))) {
           if (rule.use && Array.isArray(rule.use)) {
             rule.use = rule.use.filter(u => {
-              const loader = typeof u === 'string' ? u : u.loader;
-              return !loader || !loader.includes('lightningcss');
+              const loader = typeof u === 'string' ? u : (u?.loader || '');
+              return !loader.includes('lightningcss');
             });
           }
         }
