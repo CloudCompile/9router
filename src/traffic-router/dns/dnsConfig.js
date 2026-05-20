@@ -6,6 +6,8 @@ const { log, err } = require("../logger");
 const { ROUTER_HOSTS } = require("../../shared/constants/routerToolHosts.js");
 const { runElevatedPowerShell, isAdmin } = require("../winElevated.js");
 
+const TOOL_HOSTS = ROUTER_HOSTS;
+
 /**
  * Atomic-ish write for Windows hosts file with rollback on failure.
  * Strategy: write `.new` sibling → rename current to `.bak` → rename `.new` to target.
