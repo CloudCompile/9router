@@ -23,7 +23,7 @@ const navItems = [
   { href: "/dashboard/combos", label: "Combos", icon: "layers" },
   { href: "/dashboard/usage", label: "Usage", icon: "bar_chart" },
   { href: "/dashboard/quota", label: "Quota Tracker", icon: "data_usage" },
-  { href: "/dashboard/mitm", label: "Traffic Router", icon: "security" },
+  { href: "/dashboard/traffic-router", label: "Traffic Router", icon: "security" },
   { href: "/dashboard/cli-tools", label: "CLI Tools", icon: "terminal" },
 ];
 
@@ -33,7 +33,7 @@ const debugItems = [
 ];
 
 const systemItems = [
-  { href: "/dashboard/proxy-pools", label: "Connection Pools", icon: "lan" },
+  { href: "/dashboard/connection-pools", label: "Connection Pools", icon: "lan" },
   { href: "/dashboard/skills", label: "Skills", icon: "extension" },
 ];
 

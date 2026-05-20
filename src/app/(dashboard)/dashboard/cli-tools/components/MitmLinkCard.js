@@ -5,11 +5,11 @@ import { Card } from "@/shared/components";
 import Image from "next/image";
 
 /**
- * Clickable card for MITM tools — navigates to /dashboard/mitm on click.
+ * Clickable card for MITM tools — navigates to /dashboard/traffic-router on click.
  */
 export default function MitmLinkCard({ tool }) {
   return (
-    <Link href="/dashboard/mitm" className="block">
+    <Link href="/dashboard/traffic-router" className="block">
       <Card padding="sm" className="overflow-hidden hover:border-primary/50 transition-colors cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
