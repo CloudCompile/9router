@@ -526,7 +526,7 @@ export default function ProviderDetailPage() {
       const pool = proxyPools.find((p) => p.id === onlyId);
       return `All selected currently bound to ${pool?.name || onlyId}`;
     }
-    return "Selected connections have mixed proxy bindings";
+    return "Selected connections have mixed connection pool bindings";
   })();
 
   const openBulkProxyModal = () => {

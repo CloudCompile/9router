@@ -63,7 +63,7 @@ export default function NoAuthProxyCard({ providerId }) {
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium">No authentication required</p>
-          <p className="text-xs text-text-muted">This provider is ready to use. Optionally route requests through a proxy pool to bypass IP-based limits.</p>
+          <p className="text-xs text-text-muted">This provider is ready to use. Optionally route requests through a connection pool to distribute across multiple endpoints.</p>
         </div>
         {savedFlash && <Badge variant="success" size="sm">Saved</Badge>}
       </div>
