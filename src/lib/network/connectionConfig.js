@@ -36,7 +36,7 @@ function normalizeLegacyProxy(providerSpecificData = {}) {
  * 2. Legacy Proxy
  * 3. No Proxy
  */
-export async function resolveConnectionProxyConfig(
+export async function resolveConnectionConfig(
   providerSpecificData = {}
 ) {
   try {
@@ -140,7 +140,7 @@ export async function resolveConnectionProxyConfig(
     };
   } catch (error) {
     console.error(
-      "[resolveConnectionProxyConfig] Failed to resolve proxy config:",
+      "[resolveConnectionConfig] Failed to resolve proxy config:",
       error
     );
 
