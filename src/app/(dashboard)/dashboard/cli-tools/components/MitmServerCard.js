@@ -18,7 +18,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
   const [pendingAction, setPendingAction] = useState(null);
   const [modalError, setModalError] = useState(null);
   const [actionError, setActionError] = useState(null);
-  const [mitmRouterBaseUrl, setMitmRouterBaseUrl] = useState(DEFAULT_MITM_ROUTER_BASE);
+  const [mitmRouterBaseUrl, setMitmRouterBaseUrl] = useState(DEFAULT_ROUTER_BASE_URL);
   const [port443Conflict, setPort443Conflict] = useState(null);
 
   const serverIsWindows = status?.isWin === true;
@@ -83,7 +83,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
           body: JSON.stringify({
             apiKey: keyToUse,
             sudoPassword: password,
-            mitmRouterBaseUrl: mitmRouterBaseUrl.trim() || DEFAULT_MITM_ROUTER_BASE,
+            mitmRouterBaseUrl: mitmRouterBaseUrl.trim() || DEFAULT_ROUTER_BASE_URL,
             forceKillPort443,
           }),
         });
@@ -181,7 +181,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                 type="text"
                 value={mitmRouterBaseUrl}
                 onChange={(e) => setMitmRouterBaseUrl(e.target.value)}
-                placeholder={DEFAULT_MITM_ROUTER_BASE}
+                placeholder={DEFAULT_ROUTER_BASE_URL}
                 disabled={isRunning}
                 className="flex-1 min-w-0 px-2 py-1.5 bg-surface rounded border border-border text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50 disabled:opacity-50"
               />
@@ -192,14 +192,14 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                 <span className="material-symbols-outlined hidden text-text-muted text-[14px] sm:inline">arrow_forward</span>
                 <input
                   type="text"
-                  list="mitm-api-keys"
+                  list="router-api-keys"
                   value={selectedApiKey}
                   onChange={(e) => setSelectedApiKey(e.target.value)}
                   placeholder={cloudEnabled ? "Enter or pick API key" : "sk_9router (default)"}
                   className="flex-1 min-w-0 px-2 py-1.5 bg-surface rounded border border-border text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
                 {apiKeys?.length > 0 && (
-                  <datalist id="mitm-api-keys">
+                  <datalist id="router-api-keys">
                     {apiKeys.map((key) => (
                       <option key={key.id} value={key.key}>{key.name || key.key}</option>
                     ))}
