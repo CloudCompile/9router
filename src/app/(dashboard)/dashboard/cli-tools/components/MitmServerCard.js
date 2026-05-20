@@ -139,7 +139,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">security</span>
-              <span className="font-semibold text-sm text-text-main">MITM Server</span>
+              <span className="font-semibold text-sm text-text-main">Traffic Router Server</span>
               {isRunning ? (
                 <Badge variant="success" size="sm">Running</Badge>
               ) : (
@@ -168,7 +168,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
               <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot → with ANY provider/model from 9Router
             </p>
             <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → MITM proxy intercepts → 9Router → response to Antigravity/Copilot
+              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → Traffic Router processes → 9Router → response to Antigravity/Copilot
             </p>
           </div>
 
@@ -242,7 +242,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
               </button>
             )}
             {isRunning && (
-              <p className="text-xs text-text-muted">Enable DNS per tool below to activate interception</p>
+              <p className="text-xs text-text-muted">Enable DNS per tool below to activate routing</p>
             )}
           </div>
 
@@ -258,7 +258,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
           {serverIsWindows && !isAdmin && (
             <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600 border border-red-500/20">
               <span className="material-symbols-outlined text-[14px]">shield_lock</span>
-              <span>Administrator required — restart 9Router as Administrator to use MITM</span>
+              <span>Administrator required — restart 9Router as Administrator to use Traffic Router</span>
             </div>
           )}
         </div>
@@ -310,7 +310,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                 <p className="font-mono text-text-main" data-i18n-skip="true">
                   {port443Conflict.owner.name} (PID {port443Conflict.owner.pid})
                 </p>
-                <p>Kill this process to start MITM Server?</p>
+                <p>Kill this process to start Traffic Router Server?</p>
               </div>
             </div>
             <div className="flex items-center justify-end gap-2">

@@ -56,7 +56,7 @@ export default function ProxyPoolsPage() {
         setProxyPools(data.proxyPools || []);
       }
     } catch (error) {
-      console.log("Error fetching proxy pools:", error);
+      console.log("Error fetching connection pools:", error);
     } finally {
       setLoading(false);
     }
@@ -110,13 +110,13 @@ export default function ProxyPoolsPage() {
       if (res.ok) {
         await fetchProxyPools();
         closeFormModal();
-        notify.success(editingProxyPool ? "Proxy pool updated" : "Proxy pool created");
+        notify.success(editingProxyPool ? "Connection pool updated" : "Connection pool created");
       } else {
         const data = await res.json();
-        notify.error(data.error || "Failed to save proxy pool");
+        notify.error(data.error || "Failed to save connection pool");
       }
     } catch (error) {
-      console.log("Error saving proxy pool:", error);
+      console.log("Error saving connection pool:", error);
     } finally {
       setSaving(false);
     }
@@ -124,15 +124,15 @@ export default function ProxyPoolsPage() {
 
   const handleDelete = async (proxyPool) => {
     setConfirmState({
-      title: "Delete Proxy Pool",
-      message: `Delete proxy pool "${proxyPool.name}"?`,
+      title: "Delete Connection Pool",
+      message: `Delete connection pool "${proxyPool.name}"?`,
       onConfirm: async () => {
         setConfirmState(null);
         try {
           const res = await fetch(`/api/proxy-pools/${proxyPool.id}`, { method: "DELETE" });
           if (res.ok) {
             setProxyPools((prev) => prev.filter((item) => item.id !== proxyPool.id));
-            notify.success("Proxy pool deleted");
+            notify.success("Connection pool deleted");
             return;
           }
 
@@ -140,11 +140,11 @@ export default function ProxyPoolsPage() {
           if (res.status === 409) {
             notify.warning(`Cannot delete: ${data.boundConnectionCount || 0} connection(s) are still using this pool.`);
           } else {
-            notify.error(data.error || "Failed to delete proxy pool");
+            notify.error(data.error || "Failed to delete connection pool");
           }
         } catch (error) {
-          console.log("Error deleting proxy pool:", error);
-          notify.error("Failed to delete proxy pool");
+          console.log("Error deleting connection pool:", error);
+          notify.error("Failed to delete connection pool");
         }
       }
     });
@@ -162,9 +162,9 @@ export default function ProxyPoolsPage() {
       }
 
       await fetchProxyPools();
-      notify.success(data.ok ? "Proxy test passed" : "Proxy test failed");
+      notify.success(data.ok ? "Connection test passed" : "Connection test failed");
     } catch (error) {
-      console.log("Error testing proxy pool:", error);
+      console.log("Error testing connection pool:", error);
       notify.error("Failed to test proxy");
     } finally {
       setTestingId(null);
@@ -221,8 +221,8 @@ export default function ProxyPoolsPage() {
   const bulkDelete = async () => {
     if (selectedIds.length === 0) return;
     setConfirmState({
-      title: "Delete Proxy Pools",
-      message: `Delete ${selectedIds.length} proxy pool(s)?`,
+      title: "Delete Connection Pools",
+      message: `Delete ${selectedIds.length} connection pool(s)?`,
       onConfirm: async () => {
         setConfirmState(null);
         setBulkBusy(true);
@@ -397,7 +397,7 @@ export default function ProxyPoolsPage() {
       .filter(Boolean);
 
     if (lines.length === 0) {
-      notify.warning("Please paste at least one proxy line.");
+      notify.warning("Please paste at least one connection line.");
       return;
     }
 
@@ -488,7 +488,7 @@ export default function ProxyPoolsPage() {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-1 sm:gap-6 sm:px-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold sm:text-2xl">Proxy Pools</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">Connection Pools</h1>
           <p className="text-sm text-text-muted mt-1">
             Manage reusable per-connection proxies and bind them to provider connections.
           </p>
@@ -496,12 +496,12 @@ export default function ProxyPoolsPage() {
 
         <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
           <Button size="sm" variant="secondary" icon="cloud_upload" onClick={openVercelModal}>
-            Vercel Relay
+            Vercel Edge Gateway
           </Button>
           <Button size="sm" variant="secondary" icon="upload" onClick={openBatchImportModal}>
             Batch Import
           </Button>
-          <Button size="sm" icon="add" onClick={openCreateModal}>Add Proxy Pool</Button>
+          <Button size="sm" icon="add" onClick={openCreateModal}>Add Connection Pool</Button>
         </div>
       </div>
 
@@ -559,11 +559,11 @@ export default function ProxyPoolsPage() {
 
         {proxyPools.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-text-main font-medium mb-1">No proxy pool entries yet</p>
+            <p className="text-text-main font-medium mb-1">No connection pool entries yet</p>
             <p className="text-sm text-text-muted mb-4">
-              Create a proxy pool entry, then assign it to connections.
+              Create a connection pool entry, then assign it to connections.
             </p>
-            <Button icon="add" onClick={openCreateModal}>Add Proxy Pool</Button>
+            <Button icon="add" onClick={openCreateModal}>Add Connection Pool</Button>
           </div>
         ) : (
           <div className="flex flex-col divide-y divide-black/[0.04] dark:divide-white/[0.05]">
@@ -586,7 +586,7 @@ export default function ProxyPoolsPage() {
                       {pool.isActive ? "active" : "inactive"}
                     </Badge>
                     {pool.type === "vercel" && (
-                      <Badge variant="default" size="sm">vercel relay</Badge>
+                      <Badge variant="default" size="sm">vercel gateway</Badge>
                     )}
                     <Badge variant="default" size="sm">
                       {pool.boundConnectionCount || 0} bound
@@ -613,7 +613,7 @@ export default function ProxyPoolsPage() {
                   <button
                     onClick={() => handleTest(pool.id)}
                     className="p-2 rounded hover:bg-black/5 dark:hover:bg-white/5 text-text-muted hover:text-primary"
-                    title="Test proxy"
+                    title="Test connection"
                     disabled={testingId === pool.id}
                   >
                     <span
@@ -676,20 +676,20 @@ export default function ProxyPoolsPage() {
 
       <Modal
         isOpen={showVercelModal}
-        title="Deploy Vercel Relay"
+        title="Deploy Vercel Edge Gateway"
         onClose={closeVercelModal}
       >
         <div className="flex flex-col gap-4">
           <div className="rounded-lg bg-blue-500/5 border border-blue-500/10 p-3 flex flex-col gap-1.5">
-            <p className="text-sm text-text-main font-medium">What is Vercel Relay?</p>
+            <p className="text-sm text-text-main font-medium">What is Vercel Edge Gateway?</p>
             <p className="text-xs text-text-muted">
-              Deploys an edge relay function to Vercel. All AI provider requests will be forwarded through Vercel&apos;s edge network, masking your real IP from providers.
+              Deploys an edge gateway function to Vercel. AI provider requests are routed through Vercel&apos;s global edge network for reliable, low-latency delivery.
             </p>
             <ul className="text-xs text-text-muted list-disc pl-4 space-y-0.5">
-              <li>Your IP is replaced by Vercel&apos;s dynamic edge IPs (hundreds of IPs across 20+ global regions)</li>
-              <li>Vercel serves millions of apps — providers can&apos;t block Vercel IPs without affecting legitimate traffic</li>
+              <li>Requests are distributed across Vercel&apos;s global edge network (20+ regions worldwide)</li>
+              <li>Vercel&apos;s edge network ensures consistent, reliable connectivity to AI providers</li>
               <li>Free tier: 100GB bandwidth/month, 500K edge invocations</li>
-              <li>Deploy multiple relays on different accounts for more IP diversity</li>
+              <li>Deploy multiple gateways on different accounts for better global coverage</li>
             </ul>
           </div>
           <Input
@@ -724,7 +724,7 @@ export default function ProxyPoolsPage() {
 
       <Modal
         isOpen={showFormModal}
-        title={editingProxyPool ? "Edit Proxy Pool" : "Add Proxy Pool"}
+        title={editingProxyPool ? "Edit Connection Pool" : "Add Connection Pool"}
         onClose={closeFormModal}
       >
         <div className="flex flex-col gap-4">
@@ -732,20 +732,20 @@ export default function ProxyPoolsPage() {
             label="Name"
             value={formData.name}
             onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="Office Proxy"
+            placeholder="Office Gateway"
           />
           <Input
-            label="Proxy URL"
+            label="Gateway URL"
             value={formData.proxyUrl}
             onChange={(e) => setFormData((prev) => ({ ...prev, proxyUrl: e.target.value }))}
             placeholder="http://127.0.0.1:7897"
           />
           <Input
-            label="No Proxy"
+            label="Exclude Hosts"
             value={formData.noProxy}
             onChange={(e) => setFormData((prev) => ({ ...prev, noProxy: e.target.value }))}
             placeholder="localhost,127.0.0.1,.internal"
-            hint="Comma-separated hosts/domains to bypass proxy"
+            hint="Comma-separated hosts/domains to exclude from routing"
           />
 
           <div className="flex flex-col gap-3 rounded-lg border border-border/50 p-3 sm:flex-row sm:items-center sm:justify-between">
