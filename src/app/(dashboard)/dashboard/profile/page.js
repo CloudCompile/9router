@@ -107,7 +107,7 @@ export default function ProfilePage() {
 
     const proxyUrl = (proxyForm.outboundProxyUrl || "").trim();
     if (!proxyUrl) {
-      setProxyStatus({ type: "error", message: "Please enter a Proxy URL to test" });
+      setProxyStatus({ type: "error", message: "Please enter a connection URL to test" });
       return;
     }
 
@@ -125,7 +125,7 @@ export default function ProfilePage() {
       if (res.ok && data?.ok) {
         setProxyStatus({
           type: "success",
-          message: `Proxy test OK (${data.status}) in ${data.elapsedMs}ms`,
+          message: `Connection test OK (${data.status}) in ${data.elapsedMs}ms`,
         });
       } else {
         setProxyStatus({

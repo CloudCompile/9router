@@ -419,7 +419,7 @@ export default function ProxyPoolsPage() {
     });
 
     if (invalidLines.length > 0) {
-      notify.error(`Invalid proxy format:\n${invalidLines.join("\n")}`);
+      notify.error(`Invalid connection format:\n${invalidLines.join("\n")}`);
       return;
     }
 
