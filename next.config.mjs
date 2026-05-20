@@ -28,6 +28,22 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+
+  // Incremental Static Regeneration for better performance
+  experimental: {
+    isrMemoryCacheSize: 50 * 1024 * 1024, // 50MB ISR cache
+    dynamicIO: true, // Allow dynamic I/O in static pages
+  },
+
+  // Optimize headers and redirects
+  headers: async () => [
+    {
+      source: '/api/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300' },
+      ],
+    },
+  ],
   webpack: (config, { isServer }) => {
     // Ignore fs/path modules in browser bundle
     if (!isServer) {
@@ -39,6 +55,21 @@ const nextConfig = {
     }
     // Exclude logs, .next, gitbook subapp from watcher
     config.watchOptions = { ...config.watchOptions, ignored: /[\\/](logs|\.next|gitbook|cli)[\\/]/ };
+
+    // On Vercel, ensure lightningcss issues don't block build
+    if (process.env.VERCEL) {
+      config.module.rules.forEach(rule => {
+        if (rule.test && rule.test.toString().includes('css')) {
+          if (rule.use && Array.isArray(rule.use)) {
+            rule.use = rule.use.filter(u => {
+              const loader = typeof u === 'string' ? u : u.loader;
+              return !loader || !loader.includes('lightningcss');
+            });
+          }
+        }
+      });
+    }
+
     return config;
   },
   async rewrites() {
