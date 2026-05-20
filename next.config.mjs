@@ -102,14 +102,10 @@ const nextConfig = {
     // Exclude logs, .next, gitbook subapp from watcher
     config.watchOptions = { ...config.watchOptions, ignored: /[\\/](logs|\.next|gitbook|cli)[\\/]/ };
 
-    // On Vercel, aggressive module exclusion
+    // On Vercel, exclude only necessary native modules (but allow CSS processing)
     if (process.env.VERCEL) {
-      // Skip CSS optimization to avoid lightningcss requirement
-      config.optimization = config.optimization || {};
-      config.optimization.minimize = false;
-
-      // Exclude native modules from webpack processing entirely
-      const nativeModules = ['better-sqlite3', 'sql.js', 'lightningcss', '@tailwindcss/postcss', 'node-forge'];
+      // Exclude only database/non-CSS native modules from webpack
+      const nativeModules = ['better-sqlite3', 'sql.js', 'node-forge'];
       config.externals = config.externals || [];
       if (!Array.isArray(config.externals)) {
         config.externals = [config.externals];
@@ -119,18 +115,6 @@ const nextConfig = {
           return cb(null, `commonjs ${req}`);
         }
         cb();
-      });
-
-      // Remove problematic loaders
-      config.module.rules.forEach(rule => {
-        if (rule.test && (rule.test.toString().includes('css') || rule.test.toString().includes('postcss'))) {
-          if (rule.use && Array.isArray(rule.use)) {
-            rule.use = rule.use.filter(u => {
-              const loader = typeof u === 'string' ? u : (u?.loader || '');
-              return !loader.includes('lightningcss');
-            });
-          }
-        }
       });
     }
 
