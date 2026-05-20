@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import initSqlJs from "sql.js";
 import { PRAGMA_SQL } from "../schema.js";
 
@@ -6,7 +7,22 @@ let SQL = null;
 
 async function loadSql() {
   if (SQL) return SQL;
-  SQL = await initSqlJs();
+
+  // Locate the WASM file — check several known locations
+  const wasmCandidates = [
+    path.join(process.cwd(), "node_modules", "sql.js", "dist", "sql-wasm.wasm"),
+    path.join(process.cwd(), "public", "sql-wasm.wasm"),
+    "/var/task/node_modules/sql.js/dist/sql-wasm.wasm",
+    "/var/task/public/sql-wasm.wasm",
+  ];
+
+  let wasmPath = null;
+  for (const p of wasmCandidates) {
+    try { if (fs.existsSync(p)) { wasmPath = p; break; } } catch {}
+  }
+
+  const config = wasmPath ? { locateFile: () => wasmPath } : {};
+  SQL = await initSqlJs(config);
   return SQL;
 }
 

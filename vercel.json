@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "installCommand": "npm install --omit=optional",
+  "installCommand": "npm install",
   "env": {
     "NEXT_PUBLIC_VERCEL_DEPLOYMENT": "true",
     "NODE_ENV": "production",
@@ -33,6 +33,5 @@
       "memory": 256,
       "maxDuration": 30
     }
-  },
-  "buildCommand": "npm run build"
+  }
 }

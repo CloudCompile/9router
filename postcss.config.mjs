@@ -6,22 +6,11 @@ const isVercel = process.env.VERCEL === "1";
 
 let config = {};
 
-// On Vercel, use minimal CSS processing to avoid native modules
-if (isVercel) {
-  // Use standard postcss without tailwindcss/postcss (which requires lightningcss)
-  // Tailwind CSS will still work via its default processing
-  config = {
-    plugins: {},
-  };
-} else {
-  // Local development: use full tailwindcss with optimizations
-  config = {
-    plugins: {
-      "@tailwindcss/postcss": {
-        base: projectRoot,
-      },
-    },
-  };
-}
+// Use @tailwindcss/postcss everywhere — lightningcss is a real dep (not omit=optional)
+config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
 
 export default config;
