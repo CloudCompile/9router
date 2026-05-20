@@ -4,8 +4,8 @@ const { fetchRouter } = require("./base");
 const fs = require("fs");
 const path = require("path");
 
-// Debug trace log — written to data/logs/mitm/kiro-debug.log (dev only)
-const DEBUG_LOG = path.join(__dirname, "../../../data/logs/mitm/kiro-debug.log");
+// Debug trace log — written to data/logs/traffic-router/kiro-debug.log (dev only)
+const DEBUG_LOG = path.join(__dirname, "../../../data/logs/traffic-router/kiro-debug.log");
 function dbg(msg) {
   if (!IS_DEV) return;
   try {
@@ -384,7 +384,7 @@ async function intercept(req, res, bodyBuffer, mappedModel) {
     res.writeHead(routerRes.status, {
       "Content-Type": "application/vnd.amazon.eventstream",
       "x-amzn-requestid": `mitm-${Date.now()}`,
-      "x-amz-id-2": "mitm",
+      "x-amz-id-2": "router",
       "Transfer-Encoding": "chunked",
     });
 
