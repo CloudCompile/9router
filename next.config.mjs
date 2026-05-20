@@ -12,7 +12,7 @@ const tracingRoot = process.env.NEXT_TRACING_ROOT_MODE === "workspace"
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   output: "standalone",
-  serverExternalPackages: ["better-sqlite3", "sql.js", "node:sqlite", "bun:sqlite"],
+  serverExternalPackages: ["better-sqlite3", "sql.js", "node:sqlite", "bun:sqlite", "lightningcss"],
   turbopack: {
     root: tracingRoot
   },
@@ -80,19 +80,25 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         path: false,
+        "lightningcss": false,
       };
     }
     // Exclude logs, .next, gitbook subapp from watcher
     config.watchOptions = { ...config.watchOptions, ignored: /[\\/](logs|\.next|gitbook|cli)[\\/]/ };
 
-    // On Vercel, ensure lightningcss issues don't block build
+    // On Vercel, handle CSS processing without native modules
     if (process.env.VERCEL) {
+      // Skip CSS optimization to avoid lightningcss requirement
+      config.optimization = config.optimization || {};
+      config.optimization.minimize = false;
+
       config.module.rules.forEach(rule => {
-        if (rule.test && rule.test.toString().includes('css')) {
+        // Skip CSS loaders that require lightningcss
+        if (rule.test && (rule.test.toString().includes('css') || rule.test.toString().includes('postcss'))) {
           if (rule.use && Array.isArray(rule.use)) {
             rule.use = rule.use.filter(u => {
-              const loader = typeof u === 'string' ? u : u.loader;
-              return !loader || !loader.includes('lightningcss');
+              const loader = typeof u === 'string' ? u : (u?.loader || '');
+              return !loader.includes('lightningcss');
             });
           }
         }
