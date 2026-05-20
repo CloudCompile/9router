@@ -28,6 +28,22 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+
+  // Incremental Static Regeneration for better performance
+  experimental: {
+    isrMemoryCacheSize: 50 * 1024 * 1024, // 50MB ISR cache
+    dynamicIO: true, // Allow dynamic I/O in static pages
+  },
+
+  // Optimize headers and redirects
+  headers: async () => [
+    {
+      source: '/api/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300' },
+      ],
+    },
+  ],
   webpack: (config, { isServer }) => {
     // Ignore fs/path modules in browser bundle
     if (!isServer) {

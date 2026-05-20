@@ -5,9 +5,26 @@
   "env": {
     "NEXT_PUBLIC_VERCEL_DEPLOYMENT": "true",
     "NODE_ENV": "production",
-    "SKIP_ENV_VALIDATION": "true"
+    "SKIP_ENV_VALIDATION": "true",
+    "DEBUG_COLD_START": "false"
   },
   "functions": {
+    "src/app/api/health/route.js": {
+      "memory": 128,
+      "maxDuration": 5
+    },
+    "src/app/api/v1/models/route.js": {
+      "memory": 512,
+      "maxDuration": 30
+    },
+    "src/app/api/providers/route.js": {
+      "memory": 512,
+      "maxDuration": 30
+    },
+    "src/app/api/v1/responses/route.js": {
+      "memory": 512,
+      "maxDuration": 30
+    },
     "src/app/api/**/*.js": {
       "memory": 512,
       "maxDuration": 30
@@ -16,5 +33,7 @@
       "memory": 256,
       "maxDuration": 30
     }
-  }
+  },
+  "regions": ["iad1", "sfo1", "lhr1", "cle1", "sin1", "hkg1"],
+  "buildCommand": "npm run build"
 }
