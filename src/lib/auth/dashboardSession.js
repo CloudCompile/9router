@@ -15,7 +15,7 @@ function loadJwtSecret() {
       process.env.VERCEL_DEPLOYMENT_ID,
       process.env.VERCEL_PROJECT_PRODUCTION_URL,
       process.env.VERCEL_GIT_COMMIT_SHA,
-      "9router-jwt-v1",
+      "fusion-jwt-v1",
     ].filter(Boolean).join(":");
     return crypto.createHash("sha256").update(seed).digest("hex");
   }

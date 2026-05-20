@@ -76,7 +76,7 @@ export default function RouterServerCard({ apiKeys, cloudEnabled, onStatusChange
       } else if (action === "start") {
         const keyToUse = selectedApiKey?.trim()
           || (apiKeys?.length > 0 ? apiKeys[0].key : null)
-          || (!cloudEnabled ? "sk_9router" : null);
+          || (!cloudEnabled ? "sk_fusion" : null);
         res = await fetch("/api/cli-tools/antigravity-router", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -165,17 +165,17 @@ export default function RouterServerCard({ apiKeys, cloudEnabled, onStatusChange
           {/* Purpose & How it works */}
           <div className="px-2 py-2 rounded-lg bg-surface/50 border border-border/50 flex flex-col gap-2">
             <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot → with ANY provider/model from 9Router
+              <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot → with ANY provider/model from Fusion
             </p>
             <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → Traffic Router processes → 9Router → response to Antigravity/Copilot
+              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → Traffic Router processes → Fusion → response to Antigravity/Copilot
             </p>
           </div>
 
           {/* Base URL + API Key — same row pattern as Claude Code / cli-tools */}
           <div className="flex flex-col gap-2">
             <div className="grid gap-1 sm:grid-cols-[8rem_auto_1fr] sm:items-center sm:gap-2">
-              <span className="text-xs font-semibold text-text-main sm:text-right sm:text-sm">9Router Base URL</span>
+              <span className="text-xs font-semibold text-text-main sm:text-right sm:text-sm">Fusion Base URL</span>
               <span className="material-symbols-outlined hidden text-text-muted text-[14px] sm:inline">arrow_forward</span>
               <input
                 type="text"
@@ -195,7 +195,7 @@ export default function RouterServerCard({ apiKeys, cloudEnabled, onStatusChange
                   list="router-api-keys"
                   value={selectedApiKey}
                   onChange={(e) => setSelectedApiKey(e.target.value)}
-                  placeholder={cloudEnabled ? "Enter or pick API key" : "sk_9router (default)"}
+                  placeholder={cloudEnabled ? "Enter or pick API key" : "sk_fusion (default)"}
                   className="flex-1 min-w-0 px-2 py-1.5 bg-surface rounded border border-border text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
                 {apiKeys?.length > 0 && (
@@ -258,7 +258,7 @@ export default function RouterServerCard({ apiKeys, cloudEnabled, onStatusChange
           {serverIsWindows && !isAdmin && (
             <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600 border border-red-500/20">
               <span className="material-symbols-outlined text-[14px]">shield_lock</span>
-              <span>Administrator required — restart 9Router as Administrator to use Traffic Router</span>
+              <span>Administrator required — restart Fusion as Administrator to use Traffic Router</span>
             </div>
           )}
         </div>

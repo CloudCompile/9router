@@ -9,7 +9,7 @@ import { waitForHealth, probeUrlAlive } from "./networkProbe.js";
 initDbHooks(getSettings, updateSettings);
 
 const WORKER_URL = process.env.TUNNEL_WORKER_URL || "https://abc-tunnel.us";
-const MACHINE_ID_SALT = "9router-tunnel-salt";
+const MACHINE_ID_SALT = "fusion-tunnel-salt";
 
 // Per-service state (independent: tunnel ≠ tailscale)
 const tunnelSvc = {

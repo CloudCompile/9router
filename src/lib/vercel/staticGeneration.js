@@ -6,7 +6,7 @@ export const STATIC_ROUTES = {
   // Landing page - static, revalidate hourly
   '/': {
     revalidate: 3600,
-    metadata: { title: '9Router - Unlimited FREE AI Coding' }
+    metadata: { title: 'Fusion - Unlimited FREE AI Coding' }
   },
 
   // Landing subpages

@@ -77,7 +77,7 @@ async function initAdapter() {
   // On Vercel/serverless without PostgreSQL, skip directly to sql.js to avoid any native module loading
   if (isServerless) {
     try {
-      ensureDirs(); // Create /tmp/9router/db before sql.js tries to persist there
+      ensureDirs(); // Create /tmp/fusion/db before sql.js tries to persist there
       const { createSqlJsAdapter } = await import("./adapters/sqljsAdapter.js");
       const adapter = await createSqlJsAdapter(DATA_FILE);
       console.log(`[DB] Driver: sql.js (serverless) | file: ${DATA_FILE}`);

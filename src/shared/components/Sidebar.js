@@ -347,7 +347,7 @@ export default function Sidebar({ onClose }) {
         onClose={() => setShowShutdownModal(false)}
         onConfirm={handleShutdown}
         title="Close Server"
-        message="Are you sure you want to close the 9Router server?"
+        message="Are you sure you want to close the Fusion server?"
         confirmText="Close"
         cancelText="Cancel"
         variant="danger"
@@ -359,7 +359,7 @@ export default function Sidebar({ onClose }) {
         isOpen={showUpdateModal}
         onClose={() => setShowUpdateModal(false)}
         onConfirm={handleUpdate}
-        title="Update 9Router"
+        title="Update Fusion"
         message={`Show install command for v${updateInfo?.latestVersion || ""}? You can copy it and shutdown to install manually.`}
         confirmText="Show Command"
         cancelText="Cancel"
@@ -385,7 +385,7 @@ export default function Sidebar({ onClose }) {
                 <span className="material-symbols-outlined text-[32px]">power_off</span>
               </div>
               <h2 className="text-xl font-semibold text-white mb-2">Server Disconnected</h2>
-              <p className="text-text-muted mb-6">The 9Router server has been stopped.</p>
+              <p className="text-text-muted mb-6">The Fusion server has been stopped.</p>
               <Button variant="secondary" onClick={() => globalThis.location.reload()}>
                 Reload Page
               </Button>
@@ -410,7 +410,7 @@ function ManualUpdatePanel({ latestVersion, installCmd, copied, onCopyAndShutdow
           <span className="material-symbols-outlined text-[24px]">content_copy</span>
         </div>
         <div>
-          <h2 className="text-lg font-semibold">Update 9Router{latestVersion ? ` to v${latestVersion}` : ""}</h2>
+          <h2 className="text-lg font-semibold">Update Fusion{latestVersion ? ` to v${latestVersion}` : ""}</h2>
           <p className="text-xs text-white/60">
             {isDisconnected
               ? "Server stopped. Paste the command into a terminal to install."
@@ -429,7 +429,7 @@ function ManualUpdatePanel({ latestVersion, installCmd, copied, onCopyAndShutdow
       <ol className="text-xs text-white/70 space-y-1 list-decimal list-inside mb-4">
         <li>Click <strong>Copy & Shutdown</strong> below.</li>
         <li>Paste the command into your terminal and press Enter.</li>
-        <li>Run <code className="px-1 rounded bg-white/10 text-green-400">9router</code> again after install.</li>
+        <li>Run <code className="px-1 rounded bg-white/10 text-green-400">fusion</code> again after install.</li>
       </ol>
 
       {isDisconnected ? (

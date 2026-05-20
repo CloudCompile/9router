@@ -53,8 +53,8 @@ async function generateRootCA() {
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
 
   const attrs = [
-    { name: "commonName", value: "9Router Traffic Router Root CA" },
-    { name: "organizationName", value: "9Router" },
+    { name: "commonName", value: "Fusion Traffic Router Root CA" },
+    { name: "organizationName", value: "Fusion" },
     { name: "countryName", value: "US" }
   ];
 

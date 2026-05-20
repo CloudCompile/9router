@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { DATA_DIR } from "@/lib/dataDir.js";
 
 // Handle in-memory mode or /tmp fallback
-const baseDir = DATA_DIR || "/tmp/.9router-inmem";
+const baseDir = DATA_DIR || "/tmp/.fusion-inmem";
 export const DB_DIR = path.join(baseDir, "db");
 export const DATA_FILE = path.join(DB_DIR, "data.sqlite");
 export const BACKUPS_DIR = path.join(DB_DIR, "backups");

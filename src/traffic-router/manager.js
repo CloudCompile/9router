@@ -62,7 +62,7 @@ function resolveBundledServerPath() {
 }
 
 // Copy bundled server.js into DATA_DIR so Traffic Router doesn't lock node_modules
-// (prevents EBUSY on `npm i -g 9router@latest` while Traffic Router is running).
+// (prevents EBUSY on `npm i -g fusion@latest` while Traffic Router is running).
 function ensureRuntimeServer(bundledPath) {
   try {
     if (!bundledPath || !fs.existsSync(bundledPath)) return bundledPath;
@@ -94,7 +94,7 @@ function ensureRuntimeServer(bundledPath) {
 
 const SERVER_PATH = ensureRuntimeServer(resolveBundledServerPath());
 const ENCRYPT_ALGO = "aes-256-gcm";
-const ENCRYPT_SALT = "9router-router-pwd";
+const ENCRYPT_SALT = "fusion-router-pwd";
 
 function getProcessUsingPort443() {
   try {
@@ -556,7 +556,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
     log(`[ROUTER] server.js missing at ${effectiveServerPath} → recopying`);
     effectiveServerPath = ensureRuntimeServer(resolveBundledServerPath());
     if (!effectiveServerPath || !fs.existsSync(effectiveServerPath)) {
-      throw new Error(`Traffic Router server.js not found at ${effectiveServerPath}. Reinstall 9router.`);
+      throw new Error(`Traffic Router server.js not found at ${effectiveServerPath}. Reinstall fusion.`);
     }
   }
   const mitmRouterBase = await resolveMitmRouterBaseUrl();

@@ -107,7 +107,7 @@ const getPageInfo = (pathname) => {
   if (pathname.includes("/traffic-router"))
     return {
       title: "Traffic Router",
-      description: "Route CLI tool traffic through 9Router for unified provider access",
+      description: "Route CLI tool traffic through Fusion for unified provider access",
       icon: "security",
       breadcrumbs: [],
     };
@@ -128,7 +128,7 @@ const getPageInfo = (pathname) => {
   if (pathname.includes("/skills"))
     return {
       title: "Agent Skills",
-      description: "Copy a link and paste to your AI to use 9Router — no install needed",
+      description: "Copy a link and paste to your AI to use Fusion — no install needed",
       icon: "extension",
       breadcrumbs: [],
     };

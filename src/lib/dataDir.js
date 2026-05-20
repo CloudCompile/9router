@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "path";
 import os from "os";
 
-const APP_NAME = "9router";
+const APP_NAME = "fusion";
 
 function defaultDir() {
   // On Vercel/serverless, use /tmp which is writable

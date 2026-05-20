@@ -156,7 +156,7 @@ export default function RouterToolCard({
                   <Badge variant="warning" size="sm">DNS off</Badge>
                 )}
               </div>
-              <p className="text-xs text-text-muted sm:truncate">Route {tool.name} requests through 9Router</p>
+              <p className="text-xs text-text-muted sm:truncate">Route {tool.name} requests through Fusion</p>
             </div>
           </div>
           <span className={`material-symbols-outlined text-text-muted text-[20px] transition-transform ${isExpanded ? "rotate-180" : ""}`}>
@@ -181,7 +181,7 @@ export default function RouterToolCard({
             )}
             {/* Info */}
             <div className="flex flex-col gap-0.5 text-[11px] text-text-muted px-1">
-              <p>Toggle DNS to route {tool.name} traffic through 9Router.</p>
+              <p>Toggle DNS to route {tool.name} traffic through Fusion.</p>
               {!dnsActive && (
                 <p className="text-amber-600 text-[10px] mt-1">
                   ⚠️ Enable DNS to edit model mappings

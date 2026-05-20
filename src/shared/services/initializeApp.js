@@ -117,7 +117,7 @@ async function autoStartRouter() {
     const activeKey = keys.find(k => k.isActive !== false);
 
     console.log("[InitApp] Traffic Router was enabled, auto-starting...");
-    await startTrafficRouter(activeKey?.key || "sk_9router", password);
+    await startTrafficRouter(activeKey?.key || "sk_fusion", password);
     console.log("[InitApp] Traffic Router auto-started");
     try {
       await restoreToolDNS(password);
