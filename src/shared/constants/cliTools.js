@@ -1,13 +1,13 @@
-// MITM Tools — IDE tools intercepted via MITM proxy
-export const MITM_TOOLS = {
+// Traffic routing tools — IDE tools routed via Traffic Router
+export const TRAFFIC_ROUTER_TOOLS = {
   antigravity: {
     id: "antigravity",
     name: "Antigravity",
     image: "/providers/antigravity.png",
     color: "#4285F4",
     description: "Google Antigravity IDE via Traffic Router",
-    configType: "mitm",
-    mitmDomain: "daily-cloudcode-pa.googleapis.com",
+    configType: "traffic-router",
+    routingDomain: "daily-cloudcode-pa.googleapis.com",
     modelAliases: ["claude-opus-4-6-thinking", "claude-sonnet-4-6", "gemini-3-flash", "gpt-oss-120b-medium", "gemini-3-pro-high", "gemini-3-pro-low", "gemini-pro-agent"],
     defaultModels: [
       { id: "gemini-pro-agent", name: "Gemini Pro Agent (AG v1.23+ Agent Mode)", alias: "gemini-pro-agent" },
@@ -25,8 +25,8 @@ export const MITM_TOOLS = {
     image: "/providers/copilot.png",
     color: "#1F6FEB",
     description: "GitHub Copilot IDE via Traffic Router",
-    configType: "mitm",
-    mitmDomain: "api.individual.githubcopilot.com",
+    configType: "traffic-router",
+    routingDomain: "api.individual.githubcopilot.com",
     modelAliases: ["gpt-4o-mini", "claude-haiku-4.5", "gpt-4o", "gpt-5-mini"],
     defaultModels: [
       { id: "gpt-4o", name: "GPT-4o", alias: "gpt-4o" },
@@ -40,8 +40,8 @@ export const MITM_TOOLS = {
     image: "/providers/kiro.png",
     color: "#FF6B00",
     description: "Kiro IDE via Traffic Router",
-    configType: "mitm",
-    mitmDomain: "q.us-east-1.amazonaws.com",
+    configType: "traffic-router",
+    routingDomain: "q.us-east-1.amazonaws.com",
     defaultModels: [
       { id: "claude-sonnet-4.5", name: "Claude Sonnet 4.5", alias: "claude-sonnet-4.5" },
       { id: "claude-sonnet-4", name: "Claude Sonnet 4", alias: "claude-sonnet-4" },
@@ -56,8 +56,8 @@ export const MITM_TOOLS = {
   //   name: "Cursor",
   //   image: "/providers/cursor.png",
   //   color: "#000000",
-  //   description: "Cursor IDE with MITM",
-  //   configType: "mitm",
+  //   description: "Cursor IDE via Traffic Router",
+  //   configType: "traffic-router",
   //   mitmDomain: "api2.cursor.sh",
   //   defaultModels: [
   //     { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", alias: "claude-sonnet-4-5" },

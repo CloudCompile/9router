@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CardSkeleton } from "@/shared/components";
-import { CLI_TOOLS, MITM_TOOLS } from "@/shared/constants/cliTools";
+import { CLI_TOOLS, TRAFFIC_ROUTER_TOOLS } from "@/shared/constants/cliTools";
 import { MitmLinkCard } from "./components";
 import ToolSummaryCard from "./components/ToolSummaryCard";
 
@@ -41,7 +41,7 @@ export default function CLIToolsPageClient({ machineId }) {
   }
 
   const regularTools = Object.entries(CLI_TOOLS);
-  const mitmTools = Object.entries(MITM_TOOLS);
+  const mitmTools = Object.entries(TRAFFIC_ROUTER_TOOLS);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-1 sm:px-0">

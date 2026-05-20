@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MITM_TOOLS } from "@/shared/constants/cliTools";
+import { TRAFFIC_ROUTER_TOOLS } from "@/shared/constants/cliTools";
 import { getModelsByProviderId } from "@/shared/constants/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
 import { MitmServerCard, MitmToolCard } from "@/app/(dashboard)/dashboard/cli-tools/components";
@@ -72,7 +72,7 @@ export default function MitmPageClient() {
     );
   };
 
-  const mitmTools = Object.entries(MITM_TOOLS);
+  const mitmTools = Object.entries(TRAFFIC_ROUTER_TOOLS);
 
   return (
     <div className="flex w-full flex-col gap-6">
