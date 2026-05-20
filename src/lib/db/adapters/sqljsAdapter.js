@@ -6,7 +6,15 @@ let SQL = null;
 
 async function loadSql() {
   if (SQL) return SQL;
-  SQL = await initSqlJs();
+
+  // Configure sql.js to load WASM from public folder on Vercel
+  const isServerless = !!process.env.VERCEL || !!process.env.RAILWAY || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+  const config = isServerless
+    ? { locateFile: (file) => `/sql-wasm.wasm` } // Serverless: load from public folder
+    : {}; // Local: use default (from node_modules)
+
+  SQL = await initSqlJs(config);
   return SQL;
 }
 

@@ -6,15 +6,17 @@ const isVercel = process.env.VERCEL === "1";
 
 let config = {};
 
-// On Vercel, use minimal CSS processing to avoid native modules
 if (isVercel) {
-  // Use standard postcss without tailwindcss/postcss (which requires lightningcss)
-  // Tailwind CSS will still work via its default processing
+  // On Vercel: use tailwindcss (v4) directly without @tailwindcss/postcss plugin
+  // Next.js v16+ has built-in Tailwind support that doesn't need the plugin
   config = {
-    plugins: {},
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
   };
 } else {
-  // Local development: use full tailwindcss with optimizations
+  // Local development: use full @tailwindcss/postcss which includes lightningcss
   config = {
     plugins: {
       "@tailwindcss/postcss": {
