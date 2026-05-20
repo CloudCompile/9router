@@ -135,7 +135,7 @@ async function hasValidToken(request) {
   return await verifyDashboardAuthToken(token);
 }
 
-// Read settings directly from DB to avoid self-fetch deadlock in proxy
+// Read settings directly from DB to avoid self-fetch deadlock in request handler
 async function loadSettings() {
   try {
     return await getSettings();
@@ -164,7 +164,7 @@ export const __test__ = {
   canAccessLocalOnlyRoute,
 };
 
-export async function proxy(request) {
+export async function handleRequest(request) {
   const { pathname } = request.nextUrl;
 
   // Local-only gate for spawn-capable / host-secret routes.
