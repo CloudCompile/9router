@@ -106,8 +106,8 @@ const getPageInfo = (pathname) => {
     };
   if (pathname.includes("/mitm"))
     return {
-      title: "MITM Proxy",
-      description: "Intercept CLI tool traffic and route through 9Router",
+      title: "Traffic Router",
+      description: "Route CLI tool traffic through 9Router for unified provider access",
       icon: "security",
       breadcrumbs: [],
     };
@@ -120,8 +120,8 @@ const getPageInfo = (pathname) => {
     };
   if (pathname.includes("/proxy-pools"))
     return {
-      title: "Proxy Pools",
-      description: "Manage your proxy pool configurations",
+      title: "Connection Pools",
+      description: "Manage your connection pool configurations",
       icon: "lan",
       breadcrumbs: [],
     };

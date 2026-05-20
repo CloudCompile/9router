@@ -329,7 +329,7 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
         />
 
         <Select
-          label="Proxy Pool"
+          label="Connection Pool"
           value={formData.proxyPoolId}
           onChange={(e) => setFormData({ ...formData, proxyPoolId: e.target.value })}
           options={[
