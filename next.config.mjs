@@ -29,12 +29,47 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Optimize headers and redirects
+  // Optimize headers and rewrites
   headers: async () => [
+    // Cache models and providers aggressively
+    {
+      source: '/api/(v1/)?models',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=86400' },
+        { key: 'CDN-Cache-Control', value: 'public, max-age=86400' },
+      ],
+    },
+    {
+      source: '/api/(v1/)?providers',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=1800, s-maxage=43200' },
+        { key: 'CDN-Cache-Control', value: 'public, max-age=43200' },
+      ],
+    },
+    // Cache health checks briefly
+    {
+      source: '/api/health',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300' },
+      ],
+    },
+    // Default API cache
     {
       source: '/api/:path*',
       headers: [
-        { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300' },
+        { key: 'Cache-Control', value: 'public, max-age=300, s-maxage=3600' },
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'X-XSS-Protection', value: '1; mode=block' },
+      ],
+    },
+    // Security headers for all pages
+    {
+      source: '/:path*',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'X-XSS-Protection', value: '1; mode=block' },
       ],
     },
   ],
