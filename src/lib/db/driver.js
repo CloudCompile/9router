@@ -56,7 +56,22 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
-  // On Vercel, skip directly to sql.js to avoid any native module loading
+  // On Vercel with DATABASE_URL (Neon PostgreSQL), use it first
+  if (process.env.DATABASE_URL) {
+    try {
+      const { createPostgresAdapter } = await import("./adapters/postgresAdapter.js");
+      const adapter = await createPostgresAdapter(process.env.DATABASE_URL);
+      console.log(`[DB] Driver: postgresql (Neon) | connection pooled`);
+      const { runMigrationOnce } = await import("./migrate.js");
+      await runMigrationOnce(adapter);
+      return adapter;
+    } catch (e) {
+      console.warn(`[DB] PostgreSQL failed, falling back: ${e.message}`);
+      // Fall through to try other adapters
+    }
+  }
+
+  // On Vercel/serverless without PostgreSQL, skip directly to sql.js to avoid any native module loading
   if (isServerless) {
     try {
       const { createSqlJsAdapter } = await import("./adapters/sqljsAdapter.js");
