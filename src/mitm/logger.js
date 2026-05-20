@@ -8,8 +8,8 @@ function time() {
   return new Date().toLocaleTimeString("en-US", { hour12: false });
 }
 
-const log = (msg) => console.log(`[${time()}] [MITM] ${msg}`);
-const err = (msg) => console.error(`[${time()}] ❌ [MITM] ${msg}`);
+const log = (msg) => console.log(`[${time()}] [ROUTER] ${msg}`);
+const err = (msg) => console.error(`[${time()}] ❌ [ROUTER] ${msg}`);
 
 const DUMP_DIR = path.join(DATA_DIR, "logs", "mitm");
 if (!fs.existsSync(DUMP_DIR)) fs.mkdirSync(DUMP_DIR, { recursive: true });

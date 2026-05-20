@@ -617,7 +617,7 @@ export async function testSingleConnection(id) {
   if (effectiveProxy.connectionProxyEnabled && effectiveProxy.connectionProxyUrl && !effectiveProxy.vercelRelayUrl) {
     const proxyResult = await testProxyUrl({ proxyUrl: effectiveProxy.connectionProxyUrl });
     if (!proxyResult.ok) {
-      const proxyError = proxyResult.error || `Proxy test failed with status ${proxyResult.status}`;
+      const proxyError = proxyResult.error || `Connection test failed with status ${proxyResult.status}`;
       await updateProviderConnection(id, {
         testStatus: "error",
         lastError: proxyError,

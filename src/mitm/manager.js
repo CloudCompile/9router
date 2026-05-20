@@ -17,7 +17,7 @@ const { DATA_DIR, MITM_DIR } = require("./paths");
 const { log, err } = require("./logger");
 const { LSOF_BIN } = require("./config");
 
-const DEFAULT_MITM_ROUTER_BASE = "http://localhost:20128";
+const DEFAULT_ROUTER_BASE_URL = "http://localhost:20128";
 
 function shellQuoteSingle(str) {
   if (str == null || str === "") return "''";
@@ -25,16 +25,16 @@ function shellQuoteSingle(str) {
 }
 
 async function resolveMitmRouterBaseUrl() {
-  if (!_getSettings) return DEFAULT_MITM_ROUTER_BASE;
+  if (!_getSettings) return DEFAULT_ROUTER_BASE_URL;
   try {
     const s = await _getSettings();
     const raw = s && s.mitmRouterBaseUrl != null ? String(s.mitmRouterBaseUrl).trim() : "";
-    if (!raw) return DEFAULT_MITM_ROUTER_BASE;
+    if (!raw) return DEFAULT_ROUTER_BASE_URL;
     const u = new URL(raw);
-    if (u.protocol !== "http:" && u.protocol !== "https:") return DEFAULT_MITM_ROUTER_BASE;
+    if (u.protocol !== "http:" && u.protocol !== "https:") return DEFAULT_ROUTER_BASE_URL;
     return raw.replace(/\/+$/, "");
   } catch {
-    return DEFAULT_MITM_ROUTER_BASE;
+    return DEFAULT_ROUTER_BASE_URL;
   }
 }
 
@@ -87,7 +87,7 @@ function ensureRuntimeServer(bundledPath) {
     fs.copyFileSync(bundledPath, runtimeServer);
     return runtimeServer;
   } catch (e) {
-    try { log(`[MITM] runtime copy failed: ${e.message}`); } catch { /* ignore */ }
+    try { log(`[ROUTER] runtime copy failed: ${e.message}`); } catch { /* ignore */ }
     return bundledPath;
   }
 }
@@ -553,7 +553,7 @@ async function startServer(apiKey, sudoPassword, forceKillPort443 = false) {
   // Verify server.js exists — recopy if runtime file was deleted (antivirus/cleanup)
   let effectiveServerPath = SERVER_PATH;
   if (!effectiveServerPath || !fs.existsSync(effectiveServerPath)) {
-    log(`[MITM] server.js missing at ${effectiveServerPath} → recopying`);
+    log(`[ROUTER] server.js missing at ${effectiveServerPath} → recopying`);
     effectiveServerPath = ensureRuntimeServer(resolveBundledServerPath());
     if (!effectiveServerPath || !fs.existsSync(effectiveServerPath)) {
       throw new Error(`MITM server.js not found at ${effectiveServerPath}. Reinstall 9router.`);

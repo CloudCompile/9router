@@ -40,7 +40,7 @@ export async function POST(request, { params }) {
     const proxyPool = await getProxyPoolById(id);
 
     if (!proxyPool) {
-      return NextResponse.json({ error: "Proxy pool not found" }, { status: 404 });
+      return NextResponse.json({ error: "Connection pool not found" }, { status: 404 });
     }
 
     const result = proxyPool.type === "vercel"
@@ -51,7 +51,7 @@ export async function POST(request, { params }) {
     await updateProxyPool(id, {
       testStatus: result.ok ? "active" : "error",
       lastTestedAt: now,
-      lastError: result.ok ? null : (result.error || `Proxy test failed with status ${result.status}`),
+      lastError: result.ok ? null : (result.error || `Connection test failed with status ${result.status}`),
       isActive: result.ok,
     });
 

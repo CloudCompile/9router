@@ -16,11 +16,11 @@ import { getSettings, updateSettings } from "@/lib/localDb";
 
 initDbHooks(getSettings, updateSettings);
 
-const DEFAULT_MITM_ROUTER_BASE = "http://localhost:20128";
+const DEFAULT_ROUTER_BASE_URL = "http://localhost:20128";
 
 function normalizeMitmRouterBaseUrlInput(input) {
   if (input == null || String(input).trim() === "") {
-    return DEFAULT_MITM_ROUTER_BASE;
+    return DEFAULT_ROUTER_BASE_URL;
   }
   const t = String(input).trim().replace(/\/+$/, "");
   let u;
@@ -82,7 +82,7 @@ export async function GET() {
       isAdmin: checkIsAdmin(),
       mitmRouterBaseUrl:
         (settings.mitmRouterBaseUrl && String(settings.mitmRouterBaseUrl).trim()) ||
-        DEFAULT_MITM_ROUTER_BASE,
+        DEFAULT_ROUTER_BASE_URL,
     });
   } catch (error) {
     console.log("Error getting MITM status:", error.message);

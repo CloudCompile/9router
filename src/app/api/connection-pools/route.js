@@ -22,7 +22,7 @@ function normalizeProxyPoolInput(body = {}) {
   }
 
   if (!proxyUrl) {
-    return { error: "Proxy URL is required" };
+    return { error: "Connection URL is required" };
   }
 
   return { name, proxyUrl, noProxy, isActive, strictProxy, type };
@@ -69,8 +69,8 @@ export async function GET(request) {
 
     return NextResponse.json({ proxyPools: enrichedProxyPools });
   } catch (error) {
-    console.log("Error fetching proxy pools:", error);
-    return NextResponse.json({ error: "Failed to fetch proxy pools" }, { status: 500 });
+    console.log("Error fetching connection pools:", error);
+    return NextResponse.json({ error: "Failed to fetch connection pools" }, { status: 500 });
   }
 }
 
@@ -87,7 +87,7 @@ export async function POST(request) {
     const proxyPool = await createProxyPool(normalized);
     return NextResponse.json({ proxyPool }, { status: 201 });
   } catch (error) {
-    console.log("Error creating proxy pool:", error);
-    return NextResponse.json({ error: "Failed to create proxy pool" }, { status: 500 });
+    console.log("Error creating connection pool:", error);
+    return NextResponse.json({ error: "Failed to create connection pool" }, { status: 500 });
   }
 }

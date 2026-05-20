@@ -91,9 +91,9 @@ export default function ProfilePage() {
       const data = await res.json();
       if (res.ok) {
         setSettings((prev) => ({ ...prev, ...data }));
-        setProxyStatus({ type: "success", message: "Proxy settings applied" });
+        setProxyStatus({ type: "success", message: "Connection settings applied" });
       } else {
-        setProxyStatus({ type: "error", message: data.error || "Failed to update proxy settings" });
+        setProxyStatus({ type: "error", message: data.error || "Failed to update connection settings" });
       }
     } catch (err) {
       setProxyStatus({ type: "error", message: "An error occurred" });
@@ -115,7 +115,7 @@ export default function ProfilePage() {
     setProxyStatus({ type: "", message: "" });
 
     try {
-      const res = await fetch("/api/settings/proxy-test", {
+      const res = await fetch("/api/settings/connection-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ proxyUrl }),
@@ -130,7 +130,7 @@ export default function ProfilePage() {
       } else {
         setProxyStatus({
           type: "error",
-          message: data?.error || "Proxy test failed",
+          message: data?.error || "Connection test failed",
         });
       }
     } catch (err) {
@@ -157,10 +157,10 @@ export default function ProfilePage() {
         setProxyForm((prev) => ({ ...prev, outboundProxyEnabled: data?.outboundProxyEnabled === true }));
         setProxyStatus({
           type: "success",
-          message: outboundProxyEnabled ? "Proxy enabled" : "Proxy disabled",
+          message: outboundProxyEnabled ? "Connection routing enabled" : "Connection routing disabled",
         });
       } else {
-        setProxyStatus({ type: "error", message: data.error || "Failed to update proxy settings" });
+        setProxyStatus({ type: "error", message: data.error || "Failed to update connection settings" });
       }
     } catch (err) {
       setProxyStatus({ type: "error", message: "An error occurred" });

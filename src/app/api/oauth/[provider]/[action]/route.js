@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
 
     if (action === "start-proxy") {
       if (provider !== "codex") {
-        return NextResponse.json({ error: "Proxy only supported for codex" }, { status: 400 });
+        return NextResponse.json({ error: "Connection routing only supported for codex" }, { status: 400 });
       }
       const appPort = searchParams.get("app_port");
       if (!appPort) {
@@ -77,7 +77,7 @@ export async function GET(request, { params }) {
 
     if (action === "stop-proxy") {
       if (provider !== "codex") {
-        return NextResponse.json({ error: "Proxy only supported for codex" }, { status: 400 });
+        return NextResponse.json({ error: "Connection routing only supported for codex" }, { status: 400 });
       }
       stopCodexProxy();
       return NextResponse.json({ success: true });

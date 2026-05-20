@@ -46,7 +46,7 @@ export default function MitmToolCard({
 
   const loadSavedMappings = async () => {
     try {
-      const res = await fetch(`/api/cli-tools/antigravity-mitm/alias?tool=${tool.id}`);
+      const res = await fetch(`/api/cli-tools/antigravity-router/alias?tool=${tool.id}`);
       if (res.ok) {
         const data = await res.json();
         if (Object.keys(data.aliases || {}).length > 0) setModelMappings(data.aliases);
@@ -56,7 +56,7 @@ export default function MitmToolCard({
 
   const saveMappings = useCallback(async (mappings) => {
     try {
-      await fetch("/api/cli-tools/antigravity-mitm/alias", {
+      await fetch("/api/cli-tools/antigravity-router/alias", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tool: tool.id, mappings }),
@@ -100,7 +100,7 @@ export default function MitmToolCard({
     setLoading(true);
     setWarning(null);
     try {
-      const res = await fetch("/api/cli-tools/antigravity-mitm", {
+      const res = await fetch("/api/cli-tools/antigravity-router", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tool: tool.id, action, sudoPassword: password }),

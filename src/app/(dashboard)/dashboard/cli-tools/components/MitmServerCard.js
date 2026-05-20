@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, Button, Badge, Input } from "@/shared/components";
 
-const DEFAULT_MITM_ROUTER_BASE = "http://localhost:20128";
+const DEFAULT_ROUTER_BASE_URL = "http://localhost:20128";
 
 /**
- * Shared MITM infrastructure card — manages SSL cert + server start/stop.
+ * Shared Traffic Router infrastructure card — manages SSL cert + server start/stop.
  * DNS per-tool is handled separately in MitmToolCard.
  */
 export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }) {
@@ -29,7 +29,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch("/api/cli-tools/antigravity-mitm");
+      const res = await fetch("/api/cli-tools/antigravity-router");
       if (res.ok) {
         const data = await res.json();
         setStatus(data);
@@ -68,7 +68,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
     try {
       let res;
       if (action === "trust-cert") {
-        res = await fetch("/api/cli-tools/antigravity-mitm", {
+        res = await fetch("/api/cli-tools/antigravity-router", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "trust-cert", sudoPassword: password }),
@@ -77,7 +77,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
         const keyToUse = selectedApiKey?.trim()
           || (apiKeys?.length > 0 ? apiKeys[0].key : null)
           || (!cloudEnabled ? "sk_9router" : null);
-        res = await fetch("/api/cli-tools/antigravity-mitm", {
+        res = await fetch("/api/cli-tools/antigravity-router", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -88,7 +88,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
           }),
         });
       } else {
-        res = await fetch("/api/cli-tools/antigravity-mitm", {
+        res = await fetch("/api/cli-tools/antigravity-router", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sudoPassword: password }),
@@ -101,7 +101,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
           setPort443Conflict({ owner: data.portOwner, password });
           return;
         }
-        setActionError(data.error || `Failed to ${action} MITM server`);
+        setActionError(data.error || `Failed to ${action} Traffic Router server`);
         return;
       }
       setShowPasswordModal(false);
