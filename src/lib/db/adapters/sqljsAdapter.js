@@ -1,18 +1,34 @@
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
 import { PRAGMA_SQL } from "../schema.js";
 
 let SQL = null;
 
+function findWasmPath() {
+  // Try locations in order of preference:
+  const candidates = [
+    // 1. Relative to this file (node_modules/sql.js/dist/)
+    path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../../node_modules/sql.js/dist/sql-wasm.wasm"),
+    // 2. Project root public/ (copied by prebuild script)
+    path.join(process.cwd(), "public", "sql-wasm.wasm"),
+    // 3. Vercel build path
+    "/vercel/path0/public/sql-wasm.wasm",
+    // 4. Vercel runtime path
+    "/var/task/public/sql-wasm.wasm",
+  ];
+  for (const p of candidates) {
+    try { if (fs.existsSync(p)) return p; } catch {}
+  }
+  return null;
+}
+
 async function loadSql() {
   if (SQL) return SQL;
 
-  // Configure sql.js to load WASM from public folder on Vercel
-  const isServerless = !!process.env.VERCEL || !!process.env.RAILWAY || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
-
-  const config = isServerless
-    ? { locateFile: (file) => `/sql-wasm.wasm` } // Serverless: load from public folder
-    : {}; // Local: use default (from node_modules)
+  const wasmPath = findWasmPath();
+  const config = wasmPath ? { locateFile: () => wasmPath } : {};
 
   SQL = await initSqlJs(config);
   return SQL;
