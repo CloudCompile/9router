@@ -50,7 +50,7 @@ const PROTECTED_API_PATHS = [
   "/api/keys",
   "/api/providers",
   "/api/provider-nodes",
-  "/api/proxy-pools",
+  "/api/connection-pools",
   "/api/combos",
   "/api/models",
   "/api/usage",
@@ -68,7 +68,7 @@ const PROTECTED_API_PATHS = [
 // Routes that spawn child processes or read host secrets — restrict to localhost.
 const LOCAL_ONLY_PATHS = [
   "/api/cli-tools/cowork-settings",
-  "/api/cli-tools/antigravity-mitm",
+  "/api/cli-tools/antigravity-router",
   "/api/mcp/",
   "/api/tunnel/tailscale-install",
   "/api/tunnel/tailscale-enable",

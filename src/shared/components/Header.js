@@ -104,7 +104,7 @@ const getPageInfo = (pathname) => {
       icon: "data_usage",
       breadcrumbs: [],
     };
-  if (pathname.includes("/mitm"))
+  if (pathname.includes("/traffic-router"))
     return {
       title: "Traffic Router",
       description: "Route CLI tool traffic through 9Router for unified provider access",
@@ -118,7 +118,7 @@ const getPageInfo = (pathname) => {
       icon: "terminal",
       breadcrumbs: [],
     };
-  if (pathname.includes("/proxy-pools"))
+  if (pathname.includes("/connection-pools"))
     return {
       title: "Connection Pools",
       description: "Manage your connection pool configurations",

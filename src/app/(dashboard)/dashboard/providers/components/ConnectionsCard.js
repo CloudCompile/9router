@@ -314,7 +314,7 @@ export default function ConnectionsCard({ providerId, isOAuth }) {
     try {
       const [connRes, proxyRes, settingsRes] = await Promise.all([
         fetch("/api/providers", { cache: "no-store" }),
-        fetch("/api/proxy-pools?isActive=true", { cache: "no-store" }),
+        fetch("/api/connection-pools?isActive=true", { cache: "no-store" }),
         fetch("/api/settings", { cache: "no-store" }),
       ]);
       const connData = await connRes.json();
@@ -383,7 +383,7 @@ export default function ConnectionsCard({ providerId, isOAuth }) {
     try {
       const res = await fetch(`/api/providers/${connId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ proxyPoolId: proxyPoolId || null }) });
       if (res.ok) setConnections((prev) => prev.map((c) => c.id === connId ? { ...c, providerSpecificData: { ...c.providerSpecificData, proxyPoolId: proxyPoolId || null } } : c));
-    } catch (e) { console.log("proxy error:", e); }
+    } catch (e) { console.log("connection routing error:", e); }
   };
 
   const handleSaveApiKey = async (formData) => {

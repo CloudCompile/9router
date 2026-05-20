@@ -20,7 +20,7 @@ function normalizeProxyPoolUpdate(body = {}) {
   if (Object.prototype.hasOwnProperty.call(body, "proxyUrl")) {
     const proxyUrl = typeof body?.proxyUrl === "string" ? body.proxyUrl.trim() : "";
     if (!proxyUrl) {
-      return { error: "Proxy URL is required" };
+      return { error: "Connection URL is required" };
     }
     updates.proxyUrl = proxyUrl;
   }
@@ -56,7 +56,7 @@ export async function GET(request, { params }) {
     const proxyPool = await getProxyPoolById(id);
 
     if (!proxyPool) {
-      return NextResponse.json({ error: "Proxy pool not found" }, { status: 404 });
+      return NextResponse.json({ error: "Connection pool not found" }, { status: 404 });
     }
 
     return NextResponse.json({ proxyPool });
@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
     const existing = await getProxyPoolById(id);
 
     if (!existing) {
-      return NextResponse.json({ error: "Proxy pool not found" }, { status: 404 });
+      return NextResponse.json({ error: "Connection pool not found" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -98,7 +98,7 @@ export async function DELETE(request, { params }) {
     const existing = await getProxyPoolById(id);
 
     if (!existing) {
-      return NextResponse.json({ error: "Proxy pool not found" }, { status: 404 });
+      return NextResponse.json({ error: "Connection pool not found" }, { status: 404 });
     }
 
     const connections = await getProviderConnections();
@@ -107,7 +107,7 @@ export async function DELETE(request, { params }) {
     if (boundConnectionCount > 0) {
       return NextResponse.json(
         {
-          error: "Proxy pool is currently in use",
+          error: "Connection pool is currently in use",
           boundConnectionCount,
         },
         { status: 409 }

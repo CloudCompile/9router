@@ -21,7 +21,7 @@ function normalizeProxyConfig(body = {}) {
   if (enabled && !url) {
     return {
       hasAnyProxyField: true,
-      error: "Connection proxy URL is required when connection proxy is enabled",
+      error: "Connection routing URL is required when connection routing is enabled",
     };
   }
 
@@ -49,7 +49,7 @@ async function normalizeProxyPoolUpdate(proxyPoolIdInput) {
 
   const proxyPool = await getProxyPoolById(proxyPoolId);
   if (!proxyPool) {
-    return { hasProxyPoolField: true, error: "Proxy pool not found" };
+    return { hasProxyPoolField: true, error: "Connection pool not found" };
   }
 
   return { hasProxyPoolField: true, proxyPoolId };

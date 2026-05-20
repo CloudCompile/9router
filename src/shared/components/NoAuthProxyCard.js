@@ -17,7 +17,7 @@ export default function NoAuthProxyCard({ providerId }) {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      fetch("/api/proxy-pools?isActive=true", { cache: "no-store" }).then((r) => r.ok ? r.json() : { proxyPools: [] }),
+      fetch("/api/connection-pools?isActive=true", { cache: "no-store" }).then((r) => r.ok ? r.json() : { proxyPools: [] }),
       fetch("/api/settings", { cache: "no-store" }).then((r) => r.ok ? r.json() : {}),
     ]).then(([poolData, settingsData]) => {
       if (cancelled) return;
@@ -68,7 +68,7 @@ export default function NoAuthProxyCard({ providerId }) {
         {savedFlash && <Badge variant="success" size="sm">Saved</Badge>}
       </div>
       <Select
-        label="Proxy Pool"
+        label="Connection Pool"
         value={proxyPoolId}
         onChange={(e) => handleChange(e.target.value)}
         disabled={saving}
