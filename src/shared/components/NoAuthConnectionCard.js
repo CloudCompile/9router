@@ -8,7 +8,7 @@ import Badge from "./Badge";
 
 const NONE_PROXY_POOL_VALUE = "__none__";
 
-export default function NoAuthProxyCard({ providerId }) {
+export default function NoAuthConnectionCard({ providerId }) {
   const [proxyPools, setProxyPools] = useState([]);
   const [proxyPoolId, setProxyPoolId] = useState(NONE_PROXY_POOL_VALUE);
   const [saving, setSaving] = useState(false);
@@ -81,6 +81,6 @@ export default function NoAuthProxyCard({ providerId }) {
   );
 }
 
-NoAuthProxyCard.propTypes = {
+NoAuthConnectionCard.propTypes = {
   providerId: PropTypes.string.isRequired,
 };

@@ -28,8 +28,8 @@ const DEFAULT_SETTINGS = {
   observabilityBatchSize: 20,
   observabilityFlushIntervalMs: 5000,
   observabilityMaxJsonSize: 5,
-  outboundProxyEnabled: false,
-  outboundProxyUrl: "",
+  outboundConnectionEnabled: false,
+  outboundConnectionUrl: "",
   outboundNoProxy: "",
   routerBaseUrl: DEFAULT_ROUTER_BASE_URL,
   dnsToolEnabled: {},
@@ -50,9 +50,9 @@ function mergeWithDefaults(raw) {
   for (const [key, defVal] of Object.entries(DEFAULT_SETTINGS)) {
     if (merged[key] === undefined) {
       if (
-        key === "outboundProxyEnabled" &&
-        typeof merged.outboundProxyUrl === "string" &&
-        merged.outboundProxyUrl.trim()
+        key === "outboundConnectionEnabled" &&
+        typeof merged.outboundConnectionUrl === "string" &&
+        merged.outboundConnectionUrl.trim()
       ) {
         merged[key] = true;
       } else {

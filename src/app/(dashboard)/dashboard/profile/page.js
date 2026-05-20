@@ -31,8 +31,8 @@ export default function ProfilePage() {
   const [oidcExpanded, setOidcExpanded] = useState(false);
   const importFileRef = useRef(null);
   const [proxyForm, setProxyForm] = useState({
-    outboundProxyEnabled: false,
-    outboundProxyUrl: "",
+    outboundConnectionEnabled: false,
+    outboundConnectionUrl: "",
     outboundNoProxy: "",
   });
   const [proxyStatus, setProxyStatus] = useState({ type: "", message: "" });
@@ -54,8 +54,8 @@ export default function ProfilePage() {
         setOidcClientSecret("");
         if (data?.authMode === "oidc" || data?.authMode === "both") setOidcExpanded(true);
         setProxyForm({
-          outboundProxyEnabled: data?.outboundProxyEnabled === true,
-          outboundProxyUrl: data?.outboundProxyUrl || "",
+          outboundConnectionEnabled: data?.outboundConnectionEnabled === true,
+          outboundConnectionUrl: data?.outboundConnectionUrl || "",
           outboundNoProxy: data?.outboundNoProxy || "",
         });
         setLoading(false);
@@ -74,7 +74,7 @@ export default function ProfilePage() {
 
   const updateOutboundProxy = async (e) => {
     e.preventDefault();
-    if (settings.outboundProxyEnabled !== true) return;
+    if (settings.outboundConnectionEnabled !== true) return;
     setProxyLoading(true);
     setProxyStatus({ type: "", message: "" });
 
@@ -83,7 +83,7 @@ export default function ProfilePage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          outboundProxyUrl: proxyForm.outboundProxyUrl,
+          outboundConnectionUrl: proxyForm.outboundConnectionUrl,
           outboundNoProxy: proxyForm.outboundNoProxy,
         }),
       });
@@ -103,9 +103,9 @@ export default function ProfilePage() {
   };
 
   const testOutboundProxy = async () => {
-    if (settings.outboundProxyEnabled !== true) return;
+    if (settings.outboundConnectionEnabled !== true) return;
 
-    const proxyUrl = (proxyForm.outboundProxyUrl || "").trim();
+    const proxyUrl = (proxyForm.outboundConnectionUrl || "").trim();
     if (!proxyUrl) {
       setProxyStatus({ type: "error", message: "Please enter a connection URL to test" });
       return;
@@ -140,7 +140,7 @@ export default function ProfilePage() {
     }
   };
 
-  const updateOutboundProxyEnabled = async (outboundProxyEnabled) => {
+  const updateOutboundProxyEnabled = async (outboundConnectionEnabled) => {
     setProxyLoading(true);
     setProxyStatus({ type: "", message: "" });
 
@@ -148,16 +148,16 @@ export default function ProfilePage() {
       const res = await fetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ outboundProxyEnabled }),
+        body: JSON.stringify({ outboundConnectionEnabled }),
       });
 
       const data = await res.json();
       if (res.ok) {
         setSettings((prev) => ({ ...prev, ...data }));
-        setProxyForm((prev) => ({ ...prev, outboundProxyEnabled: data?.outboundProxyEnabled === true }));
+        setProxyForm((prev) => ({ ...prev, outboundConnectionEnabled: data?.outboundConnectionEnabled === true }));
         setProxyStatus({
           type: "success",
-          message: outboundProxyEnabled ? "Connection routing enabled" : "Connection routing disabled",
+          message: outboundConnectionEnabled ? "Connection routing enabled" : "Connection routing disabled",
         });
       } else {
         setProxyStatus({ type: "error", message: data.error || "Failed to update connection settings" });
@@ -945,20 +945,20 @@ export default function ProfilePage() {
                 <p className="text-xs sm:text-sm text-text-muted">Enable proxy for OAuth + provider outbound requests.</p>
               </div>
               <Toggle
-                checked={settings.outboundProxyEnabled === true}
-                onChange={() => updateOutboundProxyEnabled(!(settings.outboundProxyEnabled === true))}
+                checked={settings.outboundConnectionEnabled === true}
+                onChange={() => updateOutboundProxyEnabled(!(settings.outboundConnectionEnabled === true))}
                 disabled={loading || proxyLoading}
               />
             </div>
 
-            {settings.outboundProxyEnabled === true && (
+            {settings.outboundConnectionEnabled === true && (
               <form onSubmit={updateOutboundProxy} className="flex flex-col gap-4 pt-2 border-t border-border/50">
                 <div className="flex flex-col gap-2">
                   <label className="font-medium text-sm sm:text-base">Proxy URL</label>
                   <Input
                     placeholder="http://127.0.0.1:7897"
-                    value={proxyForm.outboundProxyUrl}
-                    onChange={(e) => setProxyForm((prev) => ({ ...prev, outboundProxyUrl: e.target.value }))}
+                    value={proxyForm.outboundConnectionUrl}
+                    onChange={(e) => setProxyForm((prev) => ({ ...prev, outboundConnectionUrl: e.target.value }))}
                     disabled={loading || proxyLoading}
                   />
                   <p className="text-xs sm:text-sm text-text-muted">Leave empty to inherit existing env proxy (if any).</p>
