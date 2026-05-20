@@ -21,11 +21,11 @@ export {
   createProviderNode, updateProviderNode, deleteProviderNode,
 } from "./repos/nodesRepo.js";
 
-// Proxy pools
+// Connection pools
 export {
   getProxyPools, getProxyPoolById,
   createProxyPool, updateProxyPool, deleteProxyPool,
-} from "./repos/proxyPoolsRepo.js";
+} from "./repos/connectionPoolsRepo.js";
 
 // API keys
 export {
