@@ -1,8 +1,4 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import ws from 'ws';
-
-// Required for Node.js WebSocket support in @neondatabase/serverless
-neonConfig.webSocketConstructor = ws;
+import { neon } from '@neondatabase/serverless';
 
 // Convert SQLite-style ? placeholders to PostgreSQL-style $1, $2, ...
 function pgSql(sql) {
@@ -10,112 +6,49 @@ function pgSql(sql) {
   return sql.replace(/\?/g, () => `$${++i}`);
 }
 
-// Neon serverless adapter — uses @neondatabase/serverless which handles
-// cold starts much better than plain pg on Vercel
+// Neon HTTP adapter — one HTTP request per query, no TCP/WebSocket setup.
+// No true transaction isolation (each query is stateless), but ops within
+// one Lambda invocation are serial so race conditions are not a concern.
 export async function createNeonAdapter(connectionString) {
   if (!connectionString) {
     throw new Error('[DB] DATABASE_URL not configured');
   }
 
-  const pool = new Pool({ connectionString, max: 1 });
+  const sql = neon(connectionString);
 
   // Test connectivity
   try {
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    console.log('[DB] Neon serverless connection verified');
+    await sql`SELECT 1`;
+    console.log('[DB] Neon HTTP connection verified');
   } catch (e) {
-    await pool.end();
-    throw new Error(`[DB] Neon serverless connection failed: ${e.message}`);
+    throw new Error(`[DB] Neon HTTP connection failed: ${e.message}`);
   }
 
-  async function run(sql, params = []) {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(pgSql(sql), params);
-      return { changes: result.rowCount || 0, lastID: result.rows[0]?.id ?? null };
-    } finally {
-      client.release();
-    }
+  async function run(query, params = []) {
+    const rows = await sql(pgSql(query), params);
+    return { changes: rows.length, lastID: rows[0]?.id ?? null };
   }
 
-  async function get(sql, params = []) {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(pgSql(sql), params);
-      return result.rows[0] ?? null;
-    } finally {
-      client.release();
-    }
+  async function get(query, params = []) {
+    const rows = await sql(pgSql(query), params);
+    return rows[0] ?? null;
   }
 
-  async function all(sql, params = []) {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(pgSql(sql), params);
-      return result.rows;
-    } finally {
-      client.release();
-    }
+  async function all(query, params = []) {
+    return await sql(pgSql(query), params);
   }
 
-  async function exec(sql) {
-    const client = await pool.connect();
-    try {
-      await client.query(sql);
-    } finally {
-      client.release();
-    }
+  async function exec(query) {
+    await sql(pgSql(query));
   }
 
+  // "Transaction" here just runs fn with the same adapter — no DB-level isolation.
+  // Acceptable for a single-user tool where concurrent writes are not expected.
   async function transaction(fn) {
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      const txAdapter = {
-        run: async (sql, params = []) => {
-          const result = await client.query(pgSql(sql), params);
-          return { changes: result.rowCount || 0, lastID: result.rows[0]?.id ?? null };
-        },
-        get: async (sql, params = []) => {
-          const result = await client.query(pgSql(sql), params);
-          return result.rows[0] ?? null;
-        },
-        all: async (sql, params = []) => {
-          const result = await client.query(pgSql(sql), params);
-          return result.rows;
-        },
-        exec: async (sql) => {
-          await client.query(sql);
-        },
-        transaction: async (innerFn) => {
-          const sp = `sp_${Math.random().toString(36).slice(2)}`;
-          await client.query(`SAVEPOINT ${sp}`);
-          try {
-            const result = await innerFn(txAdapter);
-            await client.query(`RELEASE SAVEPOINT ${sp}`);
-            return result;
-          } catch (e) {
-            try { await client.query(`ROLLBACK TO SAVEPOINT ${sp}`); } catch {}
-            throw e;
-          }
-        },
-      };
-      const result = await fn(txAdapter);
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      try { await client.query('ROLLBACK'); } catch {}
-      throw error;
-    } finally {
-      client.release();
-    }
+    return await fn({ run, get, all, exec, transaction });
   }
 
-  async function close() {
-    await pool.end();
-  }
+  async function close() {}
 
   return {
     driver: 'neon-serverless',
@@ -125,6 +58,6 @@ export async function createNeonAdapter(connectionString) {
     exec,
     transaction,
     close,
-    raw: pool,
+    raw: sql,
   };
 }
