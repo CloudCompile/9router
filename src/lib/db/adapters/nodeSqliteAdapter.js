@@ -61,12 +61,11 @@ export async function createNodeSqliteAdapter(filePath) {
       return prepare(sql).all(...params);
     },
     exec(sql) { return db.exec(sql); },
-    transaction(fn) {
-      // node:sqlite has no transaction wrapper. Use SAVEPOINT for nested support.
+    async transaction(fn) {
       const sp = `sp_${Math.random().toString(36).slice(2)}`;
       db.exec(`SAVEPOINT ${sp}`);
       try {
-        const r = fn();
+        const r = await fn();
         db.exec(`RELEASE ${sp}`);
         return r;
       } catch (e) {
