@@ -1,4 +1,11 @@
-// This API route is called automatically to initialize app
+import { ensureSchema } from "@/db/migrate.js";
+
+let initialized = false;
+
 export async function GET() {
-  return new Response("Initialized", { status: 200 });
+  if (!initialized) {
+    await ensureSchema();
+    initialized = true;
+  }
+  return new Response("OK", { status: 200 });
 }
