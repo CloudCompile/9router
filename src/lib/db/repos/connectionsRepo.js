@@ -45,15 +45,25 @@ function connToRow(c) {
 
 async function upsert(db, c) {
   const r = connToRow(c);
-  await db.run(
-    `INSERT INTO providerConnections(id, provider, authType, name, email, priority, isActive, data, createdAt, updatedAt)
-     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET
-       provider=excluded.provider, authType=excluded.authType, name=excluded.name,
-       email=excluded.email, priority=excluded.priority, isActive=excluded.isActive,
-       data=excluded.data, updatedAt=excluded.updatedAt`,
-    [r.id, r.provider, r.authType, r.name, r.email, r.priority, r.isActive, r.data, r.createdAt, r.updatedAt]
-  );
+  // Check if row exists
+  const existing = await db.get('SELECT id FROM providerConnections WHERE id = ?', [r.id]);
+
+  if (existing) {
+    // Update existing
+    await db.run(
+      `UPDATE providerConnections SET
+        provider=?, authType=?, name=?, email=?, priority=?, isActive=?, data=?, updatedAt=?
+        WHERE id=?`,
+      [r.provider, r.authType, r.name, r.email, r.priority, r.isActive, r.data, r.updatedAt, r.id]
+    );
+  } else {
+    // Insert new
+    await db.run(
+      `INSERT INTO providerConnections(id, provider, authType, name, email, priority, isActive, data, createdAt, updatedAt)
+       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [r.id, r.provider, r.authType, r.name, r.email, r.priority, r.isActive, r.data, r.createdAt, r.updatedAt]
+    );
+  }
 }
 
 export async function getProviderConnections(filter = {}) {
