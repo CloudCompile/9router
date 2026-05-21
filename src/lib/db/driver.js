@@ -56,26 +56,25 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
-  // PostgreSQL on Vercel is problematic: cold starts timeout frequently, and data isn't
-  // persistent anyway (each invocation gets a fresh container). Skip PostgreSQL entirely
-  // on serverless platforms and just use sql.js.
   const isDuringBuild = process.env.NEXT_PHASE === 'phase-production-build';
-  const usePostgres = process.env.DATABASE_URL && !isDuringBuild && !isServerless;
 
-  if (usePostgres) {
+  // On serverless with DATABASE_URL, use Neon's HTTP-based serverless driver.
+  // Unlike pg (TCP), it avoids cold-start timeouts and works within Vercel's 10s budget.
+  if (process.env.DATABASE_URL && !isDuringBuild) {
     try {
-      const { createPostgresAdapter } = await import("./adapters/postgresAdapter.js");
-      const adapter = await createPostgresAdapter(process.env.DATABASE_URL);
-      console.log(`[DB] Driver: postgresql (Neon) | connection pooled`);
-      // PostgreSQL is already initialized; schema auto-sync will happen on first request
+      const { createNeonAdapter } = await import("./adapters/neonAdapter.js");
+      const adapter = await createNeonAdapter(process.env.DATABASE_URL);
+      const { runMigrationOnce } = await import("./migrate.js");
+      await runMigrationOnce(adapter);
+      console.log(`[DB] Driver: neon-serverless | DATABASE_URL configured`);
       return adapter;
     } catch (e) {
-      console.warn(`[DB] PostgreSQL failed, falling back: ${e.message}`);
-      // Fall through to try other adapters
+      console.warn(`[DB] Neon serverless failed, falling back: ${e.message}`);
     }
   }
 
-  // On Vercel/serverless without PostgreSQL, skip directly to sql.js to avoid any native module loading
+  // On Vercel/serverless without DATABASE_URL, skip directly to sql.js.
+  // Data won't persist across invocations, but the app remains functional.
   if (isServerless) {
     try {
       ensureDirs(); // Create /tmp/fusion/db before sql.js tries to persist there

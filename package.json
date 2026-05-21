@@ -18,6 +18,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@monaco-editor/react": "^4.7.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@xyflow/react": "^12.10.1",
     "bcryptjs": "^3.0.3",
     "confbox": "^0.2.4",
@@ -43,6 +44,7 @@
     "sql.js": "^1.14.1",
     "undici": "^7.19.2",
     "uuid": "^13.0.0",
+    "ws": "^8.20.1",
     "zustand": "^5.0.10"
   },
   "optionalDependencies": {
