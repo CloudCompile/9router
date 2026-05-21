@@ -1,75 +1,80 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { UsageStats, RequestLogger, CardSkeleton, SegmentedControl } from "@/shared/components";
-import RequestDetailsTab from "./components/RequestDetailsTab";
-
-const PERIODS = [
-  { value: "today", label: "Today" },
-  { value: "24h", label: "24h" },
-  { value: "7d", label: "7D" },
-  { value: "30d", label: "30D" },
-  { value: "60d", label: "60D" },
-];
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function UsagePage() {
-  return (
-    <Suspense fallback={<CardSkeleton />}>
-      <UsageContent />
-    </Suspense>
-  );
-}
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-function UsageContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-  const [period, setPeriod] = useState("today");
-
-  const tabFromUrl = searchParams.get("tab");
-  const activeTab = tabFromUrl && ["overview", "logs", "details"].includes(tabFromUrl)
-    ? tabFromUrl
-    : "overview";
-
-  const handleTabChange = (value) => {
-    if (value === activeTab) return;
-    const params = new URLSearchParams(searchParams);
-    params.set("tab", value);
-    router.push(`/dashboard/usage?${params.toString()}`, { scroll: false });
-  };
+  async function fetchStats() {
+    try {
+      const res = await fetch("/api/usage/stats");
+      const data = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to fetch usage:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 px-1 sm:px-0">
-      {/* Tabs + period selector on same row */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <SegmentedControl
-          options={[
-            { value: "overview", label: "Overview" },
-            { value: "details", label: "Details" },
-          ]}
-          value={activeTab}
-          onChange={handleTabChange}
-          className="w-full sm:w-auto"
-        />
-        {activeTab === "overview" && (
-          <SegmentedControl
-            options={PERIODS}
-            value={period}
-            onChange={setPeriod}
-            size="sm"
-            className="w-full sm:w-auto"
-          />
-        )}
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Usage</h1>
+        <p className="text-gray-600 mt-2">Track your API usage and costs</p>
       </div>
 
-      {activeTab === "overview" && (
-        <Suspense fallback={<CardSkeleton />}>
-          <UsageStats period={period} setPeriod={setPeriod} hidePeriodSelector />
-        </Suspense>
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      ) : stats ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="p-6 border border-gray-200">
+            <p className="text-sm text-gray-600 font-medium">Total Requests</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {stats.requests || 0}
+            </p>
+          </Card>
+          <Card className="p-6 border border-gray-200">
+            <p className="text-sm text-gray-600 font-medium">Tokens Used</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {stats.promptTokens + stats.completionTokens}
+            </p>
+            <p className="text-xs text-gray-500 mt-2">
+              {stats.promptTokens} prompt · {stats.completionTokens} completion
+            </p>
+          </Card>
+          <Card className="p-6 border border-gray-200">
+            <p className="text-sm text-gray-600 font-medium">Estimated Cost</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              ${(stats.cost || 0).toFixed(3)}
+            </p>
+          </Card>
+        </div>
+      ) : (
+        <Card className="p-12 text-center border border-gray-200">
+          <p className="text-gray-500">No usage data yet</p>
+        </Card>
       )}
-      {activeTab === "logs" && <RequestLogger />}
-      {activeTab === "details" && <RequestDetailsTab />}
+
+      <div className="mt-8">
+        <Card className="p-6 border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            By Provider
+          </h2>
+          <p className="text-sm text-gray-600">
+            Detailed breakdown coming soon
+          </p>
+        </Card>
+      </div>
     </div>
   );
 }
