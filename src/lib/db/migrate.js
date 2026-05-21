@@ -98,11 +98,13 @@ async function syncSchemaFromTables(adapter) {
     let existing = [];
     try {
       if (isPostgres) {
+        // PostgreSQL: query information_schema
         existing = await adapter.all(
           `SELECT column_name as name FROM information_schema.columns WHERE table_name = $1`,
           [tableName]
         ) || [];
       } else {
+        // SQLite: use PRAGMA
         existing = await adapter.all(`PRAGMA table_info(${tableName})`) || [];
       }
     } catch (e) {
@@ -162,6 +164,7 @@ async function importLegacyMain(adapter, data) {
     }
   }
 
+  // Build INSERT statement helper for database-specific syntax
   const buildInsertReplace = (table, cols, pg_cols_str) => {
     if (isPostgres) {
       const colList = cols.join(', ');

@@ -56,9 +56,9 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
-  // PostgreSQL support is only enabled at runtime, not during Vercel build.
-  // NEXT_PHASE is set to 'phase-production-build' only during `next build`.
-  // process.env.VERCEL is '1' at both build-time AND runtime, so it cannot be used here.
+  // PostgreSQL support is only enabled at runtime (post-build), not during Vercel build.
+  // VERCEL=1 is set both at build time AND runtime, so we use NEXT_PHASE instead.
+  // NEXT_PHASE=phase-production-build only during `next build`, not during request handling.
   const isDuringBuild = process.env.NEXT_PHASE === 'phase-production-build';
 
   if (process.env.DATABASE_URL && !isDuringBuild) {
