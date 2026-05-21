@@ -98,10 +98,10 @@ async function syncSchemaFromTables(adapter) {
     let existing = [];
     try {
       if (isPostgres) {
-        // PostgreSQL: query information_schema
+        // PostgreSQL: query information_schema; table_name is stored lowercase for unquoted identifiers
         existing = await adapter.all(
           `SELECT column_name as name FROM information_schema.columns WHERE table_name = $1`,
-          [tableName]
+          [tableName.toLowerCase()]
         ) || [];
       } else {
         // SQLite: use PRAGMA
@@ -112,9 +112,10 @@ async function syncSchemaFromTables(adapter) {
       existing = [];
     }
 
-    const existingNames = new Set(existing.map((r) => r.name));
+    // Normalize to lowercase for comparison — PostgreSQL returns lowercase for unquoted columns
+    const existingNames = new Set(existing.map((r) => (r.name || '').toLowerCase()));
     for (const [colName, colDef] of Object.entries(def.columns)) {
-      if (!existingNames.has(colName)) {
+      if (!existingNames.has(colName.toLowerCase())) {
         let safeDef = colDef;
         if (!isPostgres) {
           safeDef = colDef
