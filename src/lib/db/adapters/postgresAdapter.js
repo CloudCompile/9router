@@ -10,10 +10,10 @@ export async function createPostgresAdapter(connectionString) {
   // Use connection pooling for serverless
   const pool = new Pool({
     connectionString,
-    // Serverless optimizations
+    // Serverless optimizations: increased timeout for Neon cold starts
     max: 1, // Single connection per function
-    idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000, // 30s idle timeout
+    connectionTimeoutMillis: 30000, // 30s connection timeout for Neon cold starts
   });
 
   // Test connection
@@ -85,15 +85,42 @@ export async function createPostgresAdapter(connectionString) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-      const result = await fn({
-        run: (sql, params) => client.query(sql, params),
-        get: (sql, params) => client.query(sql, params).then(r => r.rows[0]),
-        all: (sql, params) => client.query(sql, params).then(r => r.rows),
-      });
+      // Create a transaction-specific adapter that uses the same client
+      const txAdapter = {
+        run: async (sql, params = []) => {
+          const result = await client.query(sql, params);
+          return { changes: result.rowCount || 0, lastID: result.rows[0]?.id };
+        },
+        get: async (sql, params = []) => {
+          const result = await client.query(sql, params);
+          return result.rows[0] || null;
+        },
+        all: async (sql, params = []) => {
+          const result = await client.query(sql, params);
+          return result.rows;
+        },
+        exec: async (sql) => {
+          await client.query(sql);
+        },
+        transaction: async (innerFn) => {
+          // Nested transactions use savepoints
+          const sp = `sp_${Math.random().toString(36).slice(2)}`;
+          await client.query(`SAVEPOINT ${sp}`);
+          try {
+            const result = await innerFn(txAdapter);
+            await client.query(`RELEASE ${sp}`);
+            return result;
+          } catch (e) {
+            try { await client.query(`ROLLBACK TO ${sp}`); } catch {}
+            throw e;
+          }
+        },
+      };
+      const result = await fn(txAdapter);
       await client.query('COMMIT');
       return result;
     } catch (error) {
-      await client.query('ROLLBACK');
+      try { await client.query('ROLLBACK'); } catch {}
       throw error;
     } finally {
       client.release();
