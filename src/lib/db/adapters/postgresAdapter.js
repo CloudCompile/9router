@@ -11,8 +11,8 @@ export async function createPostgresAdapter(connectionString) {
   const pool = new Pool({
     connectionString,
     max: 1, // Single connection per function
-    idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 5000, // Fail fast so Vercel function timeout isn't exceeded
+    idleTimeoutMillis: 8000,
+    connectionTimeoutMillis: 8000, // 8s timeout (Vercel has 10s limit, with overhead)
   });
 
   // Test connection
