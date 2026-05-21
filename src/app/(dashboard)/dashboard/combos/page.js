@@ -17,7 +17,7 @@ export default function CombosPage() {
     try {
       const res = await fetch("/api/combos");
       const data = await res.json();
-      setCombos(data);
+      setCombos(data.combos || []);
     } catch (err) {
       console.error("Failed to fetch combos:", err);
     } finally {

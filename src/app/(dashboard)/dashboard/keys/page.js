@@ -17,7 +17,7 @@ export default function KeysPage() {
     try {
       const res = await fetch("/api/keys");
       const data = await res.json();
-      setKeys(data);
+      setKeys(data.keys || []);
     } catch (err) {
       console.error("Failed to fetch keys:", err);
     } finally {

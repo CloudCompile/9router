@@ -17,7 +17,7 @@ export default function ProvidersPage() {
     try {
       const res = await fetch("/api/providers");
       const data = await res.json();
-      setConnections(data);
+      setConnections(data.connections || []);
     } catch (err) {
       console.error("Failed to fetch connections:", err);
     } finally {

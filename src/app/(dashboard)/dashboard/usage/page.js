@@ -16,7 +16,7 @@ export default function UsagePage() {
     try {
       const res = await fetch("/api/usage/stats");
       const data = await res.json();
-      setStats(data);
+      setStats(data.stats || data);
     } catch (err) {
       console.error("Failed to fetch usage:", err);
     } finally {
