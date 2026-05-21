@@ -101,11 +101,11 @@ export async function createSqlJsAdapter(filePath) {
     scheduleSave();
   }
 
-  function transaction(fn) {
+  async function transaction(fn) {
     const sp = `sp_${Math.random().toString(36).slice(2)}`;
     db.exec(`SAVEPOINT ${sp}`);
     try {
-      const result = fn();
+      const result = await fn();
       db.exec(`RELEASE ${sp}`);
       scheduleSave();
       return result;
