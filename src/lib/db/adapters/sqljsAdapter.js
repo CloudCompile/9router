@@ -65,9 +65,8 @@ export async function createSqlJsAdapter(filePath) {
       stmt.bind(paramsObj(params));
       stmt.step();
       const changes = db.getRowsModified();
-      const lastInsertRowid = db.exec("SELECT last_insert_rowid() as id")[0]?.values?.[0]?.[0] ?? null;
       scheduleSave();
-      return { changes, lastInsertRowid };
+      return { changes, lastID: null };
     } finally {
       stmt.free();
     }
