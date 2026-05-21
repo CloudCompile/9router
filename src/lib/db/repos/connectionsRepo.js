@@ -91,10 +91,9 @@ async function reorderInTx(db, providerId) {
 export async function createProviderConnection(data) {
   const db = await getAdapter();
   const now = new Date().toISOString();
-  let result;
 
-  await db.transaction(async () => {
-    const all = (await db.all(`SELECT * FROM providerConnections WHERE provider = ?`, [data.provider])).map(rowToConn);
+  const result = await db.transaction(async (txDb) => {
+    const all = (await txDb.all(`SELECT * FROM providerConnections WHERE provider = ?`, [data.provider])).map(rowToConn);
 
     let existing = null;
     if (data.authType === "oauth" && data.email) {
@@ -105,9 +104,8 @@ export async function createProviderConnection(data) {
 
     if (existing) {
       const merged = { ...existing, ...data, updatedAt: now };
-      await upsert(db, merged);
-      result = merged;
-      return;
+      await upsert(txDb, merged);
+      return merged;
     }
 
     let connectionName = data.name || null;
@@ -137,9 +135,9 @@ export async function createProviderConnection(data) {
     }
     if (data.email !== undefined) conn.email = data.email;
 
-    await upsert(db, conn);
-    await reorderInTx(db, data.provider);
-    result = conn;
+    await upsert(txDb, conn);
+    await reorderInTx(txDb, data.provider);
+    return conn;
   });
 
   return result;
@@ -148,28 +146,26 @@ export async function createProviderConnection(data) {
 // Critical: OAuth refresh token race — atomic merge inside transaction
 export async function updateProviderConnection(id, data) {
   const db = await getAdapter();
-  let result;
-  await db.transaction(async () => {
-    const row = await db.get(`SELECT * FROM providerConnections WHERE id = ?`, [id]);
-    if (!row) { result = null; return; }
+  const result = await db.transaction(async (txDb) => {
+    const row = await txDb.get(`SELECT * FROM providerConnections WHERE id = ?`, [id]);
+    if (!row) return null;
     const existing = rowToConn(row);
     const merged = { ...existing, ...data, updatedAt: new Date().toISOString() };
-    await upsert(db, merged);
-    if (data.priority !== undefined) await reorderInTx(db, existing.provider);
-    result = merged;
+    await upsert(txDb, merged);
+    if (data.priority !== undefined) await reorderInTx(txDb, existing.provider);
+    return merged;
   });
   return result;
 }
 
 export async function deleteProviderConnection(id) {
   const db = await getAdapter();
-  let ok = false;
-  await db.transaction(async () => {
-    const row = await db.get(`SELECT provider FROM providerConnections WHERE id = ?`, [id]);
-    if (!row) return;
-    await db.run(`DELETE FROM providerConnections WHERE id = ?`, [id]);
-    await reorderInTx(db, row.provider);
-    ok = true;
+  const ok = await db.transaction(async (txDb) => {
+    const row = await txDb.get(`SELECT provider FROM providerConnections WHERE id = ?`, [id]);
+    if (!row) return false;
+    await txDb.run(`DELETE FROM providerConnections WHERE id = ?`, [id]);
+    await reorderInTx(txDb, row.provider);
+    return true;
   });
   return ok;
 }
@@ -183,7 +179,7 @@ export async function deleteProviderConnectionsByProvider(providerId) {
 
 export async function reorderProviderConnections(providerId) {
   const db = await getAdapter();
-  await db.transaction(async () => reorderInTx(db, providerId));
+  await db.transaction(async (txDb) => reorderInTx(txDb, providerId));
 }
 
 export async function cleanupProviderConnections() {
@@ -195,24 +191,25 @@ export async function cleanupProviderConnections() {
     "lastTested", "lastError", "lastErrorAt", "rateLimitedUntil", "expiresIn",
     "consecutiveUseCount",
   ];
-  let cleaned = 0;
-  await db.transaction(async () => {
-    const rows = await db.all(`SELECT * FROM providerConnections`);
+  const cleaned = await db.transaction(async (txDb) => {
+    let count = 0;
+    const rows = await txDb.all(`SELECT * FROM providerConnections`);
     for (const row of rows) {
       const conn = rowToConn(row);
       let dirty = false;
       for (const f of fieldsToCheck) {
         if (conn[f] === null || conn[f] === undefined) {
-          if (f in conn) { delete conn[f]; cleaned++; dirty = true; }
+          if (f in conn) { delete conn[f]; count++; dirty = true; }
         }
       }
       if (conn.providerSpecificData && Object.keys(conn.providerSpecificData).length === 0) {
         delete conn.providerSpecificData;
-        cleaned++;
+        count++;
         dirty = true;
       }
-      if (dirty) await upsert(db, conn);
+      if (dirty) await upsert(txDb, conn);
     }
+    return count;
   });
   return cleaned;
 }
