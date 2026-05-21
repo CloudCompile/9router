@@ -10,10 +10,9 @@ export async function createPostgresAdapter(connectionString) {
   // Use connection pooling for serverless
   const pool = new Pool({
     connectionString,
-    // Serverless optimizations: increased timeout for Neon cold starts
     max: 1, // Single connection per function
-    idleTimeoutMillis: 30000, // 30s idle timeout
-    connectionTimeoutMillis: 30000, // 30s connection timeout for Neon cold starts
+    idleTimeoutMillis: 5000,
+    connectionTimeoutMillis: 5000, // Fail fast so Vercel function timeout isn't exceeded
   });
 
   // Test connection
