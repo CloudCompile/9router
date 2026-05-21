@@ -56,12 +56,13 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
-  // PostgreSQL support is only enabled at runtime (post-build), not during Vercel build.
-  // VERCEL=1 is set both at build time AND runtime, so we use NEXT_PHASE instead.
-  // NEXT_PHASE=phase-production-build only during `next build`, not during request handling.
+  // PostgreSQL on Vercel is problematic: cold starts timeout frequently, and data isn't
+  // persistent anyway (each invocation gets a fresh container). Skip PostgreSQL entirely
+  // on serverless platforms and just use sql.js.
   const isDuringBuild = process.env.NEXT_PHASE === 'phase-production-build';
+  const usePostgres = process.env.DATABASE_URL && !isDuringBuild && !isServerless;
 
-  if (process.env.DATABASE_URL && !isDuringBuild) {
+  if (usePostgres) {
     try {
       const { createPostgresAdapter } = await import("./adapters/postgresAdapter.js");
       const adapter = await createPostgresAdapter(process.env.DATABASE_URL);
