@@ -14,7 +14,8 @@ export async function createNeonAdapter(connectionString) {
     throw new Error('[DB] DATABASE_URL not configured');
   }
 
-  const sql = neon(connectionString);
+  // fullResults: true returns { rows, rowCount, command } instead of just rows[]
+  const sql = neon(connectionString, { fullResults: true });
 
   // Test connectivity
   try {
@@ -25,17 +26,18 @@ export async function createNeonAdapter(connectionString) {
   }
 
   async function run(query, params = []) {
-    const rows = await sql(pgSql(query), params);
-    return { changes: rows.length, lastID: rows[0]?.id ?? null };
+    const result = await sql(pgSql(query), params);
+    return { changes: result.rowCount ?? 0, lastID: result.rows[0]?.id ?? null };
   }
 
   async function get(query, params = []) {
-    const rows = await sql(pgSql(query), params);
-    return rows[0] ?? null;
+    const result = await sql(pgSql(query), params);
+    return result.rows[0] ?? null;
   }
 
   async function all(query, params = []) {
-    return await sql(pgSql(query), params);
+    const result = await sql(pgSql(query), params);
+    return result.rows;
   }
 
   async function exec(query) {
