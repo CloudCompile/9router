@@ -185,7 +185,11 @@ export async function POST(request) {
 
     return NextResponse.json({ connection: result }, { status: 201 });
   } catch (error) {
-    console.error("Error creating provider:", error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : "");
-    return NextResponse.json({ error: "Failed to create provider" }, { status: 500 });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : "";
+    console.error(`[ERROR] createProviderConnection failed: ${errorMsg}`);
+    if (errorStack) console.error(`[STACK] ${errorStack}`);
+    console.error(`[DEBUG] error type: ${error?.constructor?.name}, error object:`, error);
+    return NextResponse.json({ error: "Failed to create provider", details: errorMsg }, { status: 500 });
   }
 }
