@@ -56,7 +56,7 @@ async function isFreshDb(adapter) {
 
 // ─── Versioned migrations runner (skip-version safe) ─────────────────────
 async function runVersionedMigrations(adapter) {
-  const isPostgres = adapter.driver === 'postgresql';
+  const isPostgres = adapter.driver === 'postgresql' || adapter.driver === 'neon-serverless';
   // Bootstrap _meta first so we can read schemaVersion
   await adapter.exec(buildCreateTableSql("_meta", TABLES._meta, isPostgres));
 
@@ -88,7 +88,7 @@ async function runVersionedMigrations(adapter) {
 
 // ─── Auto-sync (additive only): add missing tables/columns/indexes ───────
 async function syncSchemaFromTables(adapter) {
-  const isPostgres = adapter.driver === 'postgresql';
+  const isPostgres = adapter.driver === 'postgresql' || adapter.driver === 'neon-serverless';
 
   for (const [tableName, def] of Object.entries(TABLES)) {
     // Create table if absent
@@ -148,7 +148,7 @@ async function syncSchemaFromTables(adapter) {
 async function importLegacyMain(adapter, data) {
   if (!data || typeof data !== "object") return;
 
-  const isPostgres = adapter.driver === 'postgresql';
+  const isPostgres = adapter.driver === 'postgresql' || adapter.driver === 'neon-serverless';
 
   if (data.settings) {
     if (isPostgres) {

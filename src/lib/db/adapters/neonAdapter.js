@@ -4,6 +4,12 @@ import ws from 'ws';
 // Required for Node.js WebSocket support in @neondatabase/serverless
 neonConfig.webSocketConstructor = ws;
 
+// Convert SQLite-style ? placeholders to PostgreSQL-style $1, $2, ...
+function pgSql(sql) {
+  let i = 0;
+  return sql.replace(/\?/g, () => `$${++i}`);
+}
+
 // Neon serverless adapter — uses @neondatabase/serverless which handles
 // cold starts much better than plain pg on Vercel
 export async function createNeonAdapter(connectionString) {
@@ -27,7 +33,7 @@ export async function createNeonAdapter(connectionString) {
   async function run(sql, params = []) {
     const client = await pool.connect();
     try {
-      const result = await client.query(sql, params);
+      const result = await client.query(pgSql(sql), params);
       return { changes: result.rowCount || 0, lastID: result.rows[0]?.id ?? null };
     } finally {
       client.release();
@@ -37,7 +43,7 @@ export async function createNeonAdapter(connectionString) {
   async function get(sql, params = []) {
     const client = await pool.connect();
     try {
-      const result = await client.query(sql, params);
+      const result = await client.query(pgSql(sql), params);
       return result.rows[0] ?? null;
     } finally {
       client.release();
@@ -47,7 +53,7 @@ export async function createNeonAdapter(connectionString) {
   async function all(sql, params = []) {
     const client = await pool.connect();
     try {
-      const result = await client.query(sql, params);
+      const result = await client.query(pgSql(sql), params);
       return result.rows;
     } finally {
       client.release();
@@ -69,15 +75,15 @@ export async function createNeonAdapter(connectionString) {
       await client.query('BEGIN');
       const txAdapter = {
         run: async (sql, params = []) => {
-          const result = await client.query(sql, params);
+          const result = await client.query(pgSql(sql), params);
           return { changes: result.rowCount || 0, lastID: result.rows[0]?.id ?? null };
         },
         get: async (sql, params = []) => {
-          const result = await client.query(sql, params);
+          const result = await client.query(pgSql(sql), params);
           return result.rows[0] ?? null;
         },
         all: async (sql, params = []) => {
-          const result = await client.query(sql, params);
+          const result = await client.query(pgSql(sql), params);
           return result.rows;
         },
         exec: async (sql) => {
