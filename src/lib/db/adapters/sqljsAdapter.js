@@ -104,7 +104,8 @@ export async function createSqlJsAdapter(filePath) {
     const sp = `sp_${Math.random().toString(36).slice(2)}`;
     db.exec(`SAVEPOINT ${sp}`);
     try {
-      const result = await fn();
+      const txAdapter = { run, get, all, exec };
+      const result = await fn(txAdapter);
       db.exec(`RELEASE ${sp}`);
       scheduleSave();
       return result;
