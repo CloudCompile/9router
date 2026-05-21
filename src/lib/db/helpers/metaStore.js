@@ -21,7 +21,7 @@ export async function setMetaFromAdapter(adapter, key, value) {
   await adapter.run(`INSERT INTO _meta(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, [key, String(value)]);
 }
 
-// Sync versions for use during migration (adapter passed directly)
+// Sync versions for SQLite adapters (backward compat, do NOT use with PostgreSQL)
 export function getMetaSync(adapter, key, fallback = null) {
   const row = adapter.get(`SELECT value FROM _meta WHERE key = ?`, [key]);
   return row ? row.value : fallback;
@@ -29,4 +29,14 @@ export function getMetaSync(adapter, key, fallback = null) {
 
 export function setMetaSync(adapter, key, value) {
   adapter.run(`INSERT INTO _meta(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, [key, String(value)]);
+}
+
+// Async versions: work with both sync (SQLite) and async (PostgreSQL) adapters
+export async function getMetaFromAdapter(adapter, key, fallback = null) {
+  const row = await adapter.get(`SELECT value FROM _meta WHERE key = ?`, [key]);
+  return row ? row.value : fallback;
+}
+
+export async function setMetaFromAdapter(adapter, key, value) {
+  await adapter.run(`INSERT INTO _meta(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, [key, String(value)]);
 }

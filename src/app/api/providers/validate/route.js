@@ -99,11 +99,15 @@ export async function POST(request) {
     // Validate with each provider
     try {
       if (isOpenAICompatibleProvider(provider)) {
-        const node = await getProviderNodeById(provider);
-        if (!node) {
-          return NextResponse.json({ error: "OpenAI Compatible node not found" }, { status: 404 });
+        let baseUrl = providerSpecificData?.baseUrl;
+        if (!baseUrl) {
+          const node = await getProviderNodeById(provider);
+          if (!node) {
+            return NextResponse.json({ error: "OpenAI Compatible node not found" }, { status: 404 });
+          }
+          baseUrl = node.baseUrl;
         }
-        const modelsUrl = `${node.baseUrl?.replace(/\/$/, "")}/models`;
+        const modelsUrl = `${baseUrl?.replace(/\/$/, "")}/models`;
         const res = await fetch(modelsUrl, {
           headers: { "Authorization": `Bearer ${apiKey}` },
         });
@@ -116,11 +120,15 @@ export async function POST(request) {
 
       // Custom Embedding nodes: probe /models (most embedding APIs are OpenAI-compatible)
       if (isCustomEmbeddingProvider(provider)) {
-        const node = await getProviderNodeById(provider);
-        if (!node) {
-          return NextResponse.json({ error: "Custom Embedding node not found" }, { status: 404 });
+        let baseUrl = providerSpecificData?.baseUrl;
+        if (!baseUrl) {
+          const node = await getProviderNodeById(provider);
+          if (!node) {
+            return NextResponse.json({ error: "Custom Embedding node not found" }, { status: 404 });
+          }
+          baseUrl = node.baseUrl;
         }
-        const baseUrl = node.baseUrl?.replace(/\/$/, "");
+        baseUrl = baseUrl?.replace(/\/$/, "");
         const modelsRes = await fetch(`${baseUrl}/models`, {
           headers: { "Authorization": `Bearer ${apiKey}` },
         });
@@ -146,14 +154,18 @@ export async function POST(request) {
       }
 
       if (isAnthropicCompatibleProvider(provider)) {
-        const node = await getProviderNodeById(provider);
-        if (!node) {
-          return NextResponse.json({ error: "Anthropic Compatible node not found" }, { status: 404 });
+        let baseUrl = providerSpecificData?.baseUrl;
+        if (!baseUrl) {
+          const node = await getProviderNodeById(provider);
+          if (!node) {
+            return NextResponse.json({ error: "Anthropic Compatible node not found" }, { status: 404 });
+          }
+          baseUrl = node.baseUrl;
         }
 
-        let normalizedBase = node.baseUrl?.trim().replace(/\/$/, "") || "";
+        let normalizedBase = baseUrl?.trim().replace(/\/$/, "") || "";
         if (normalizedBase.endsWith("/messages")) {
-          normalizedBase = normalizedBase.slice(0, -9); // remove /messages
+          normalizedBase = normalizedBase.slice(0, -9);
         }
 
         const modelsUrl = `${normalizedBase}/models`;

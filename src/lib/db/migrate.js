@@ -3,7 +3,7 @@ import path from "node:path";
 import { LEGACY_FILES, DB_DIR, DATA_FILE } from "./paths.js";
 import { TABLES, buildCreateTableSql, PRAGMA_SQL } from "./schema.js";
 import { MIGRATIONS, latestVersion } from "./migrations/index.js";
-import { getMetaFromAdapter, setMetaFromAdapter } from "./helpers/metaStore.js";
+import { getMetaSync, setMetaSync, getMetaFromAdapter, setMetaFromAdapter } from "./helpers/metaStore.js";
 import { makeBackupDir, backupFile, pruneOldBackups } from "./backup.js";
 import { getAppVersion } from "./version.js";
 import { stringifyJson } from "./helpers/jsonCol.js";
@@ -31,7 +31,8 @@ async function importWithAssertion(adapter, tableName, rows, insertFn, rowMeta) 
     try { await insertFn(row); }
     catch (err) { dropped.push({ ...rowMeta(row), reason: err.message }); }
   }
-  const inserted = (await adapter.get(`SELECT COUNT(*) as c FROM ${tableName}`))?.c ?? 0;
+  const countRow = await adapter.get(`SELECT COUNT(*) as c FROM ${tableName}`);
+  const inserted = countRow?.c ?? 0;
   if (inserted !== rows.length) {
     console.warn(`[DB][migrate] ${tableName} row-count mismatch: expected ${rows.length}, got ${inserted}. Dropped:`, dropped);
     throw new MigrationAborted(`${tableName} row-count mismatch: expected ${rows.length}, got ${inserted}`, dropped);
@@ -114,8 +115,6 @@ async function syncSchemaFromTables(adapter) {
     const existingNames = new Set(existing.map((r) => r.name));
     for (const [colName, colDef] of Object.entries(def.columns)) {
       if (!existingNames.has(colName)) {
-        // SQLite ADD COLUMN restrictions: no PRIMARY KEY / UNIQUE w/o NULL ok.
-        // We strip PRIMARY KEY / UNIQUE since those are only valid at create time.
         let safeDef = colDef;
         if (!isPostgres) {
           safeDef = colDef
@@ -123,7 +122,6 @@ async function syncSchemaFromTables(adapter) {
             .replace(/UNIQUE/i, "")
             .trim();
         } else {
-          // PostgreSQL: convert SQLite constraints to PostgreSQL equivalents
           safeDef = colDef
             .replace(/PRIMARY KEY( AUTOINCREMENT)?/i, "")
             .replace(/AUTOINCREMENT/i, "")
@@ -166,6 +164,20 @@ async function importLegacyMain(adapter, data) {
     }
   }
 
+  // Build INSERT statement helper for database-specific syntax
+  const buildInsertReplace = (table, cols, pg_cols_str) => {
+    if (isPostgres) {
+      const colList = cols.join(', ');
+      const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
+      const updates = pg_cols_str || cols.filter(c => c !== 'id').map(c => `${c} = excluded.${c}`).join(', ');
+      return `INSERT INTO ${table}(${colList}) VALUES(${placeholders}) ON CONFLICT(id) DO UPDATE SET ${updates}`;
+    } else {
+      const colList = cols.join(', ');
+      const placeholders = cols.map(() => '?').join(', ');
+      return `INSERT OR REPLACE INTO ${table}(${colList}) VALUES(${placeholders})`;
+    }
+  };
+
   await importWithAssertion(adapter, "providerConnections", data.providerConnections || [], async (c) => {
     const { id, provider, authType, name, email, priority, isActive, createdAt, updatedAt, ...rest } = c;
     if (isPostgres) {
@@ -181,44 +193,26 @@ async function importLegacyMain(adapter, data) {
     }
   }, (c) => ({ id: c.id ?? null, provider: c.provider ?? null, name: c.name ?? null }));
 
-  // Build INSERT statement helper for database-specific syntax
-  const buildInsertReplace = (table, cols, pg_cols_str) => {
-    if (isPostgres) {
-      const colList = cols.join(', ');
-      const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
-      const updates = pg_cols_str || cols.filter(c => c !== 'id').map(c => `${c} = excluded.${c}`).join(', ');
-      return `INSERT INTO ${table}(${colList}) VALUES(${placeholders}) ON CONFLICT(id) DO UPDATE SET ${updates}`;
-    } else {
-      const colList = cols.join(', ');
-      const placeholders = cols.map(() => '?').join(', ');
-      return `INSERT OR REPLACE INTO ${table}(${colList}) VALUES(${placeholders})`;
-    }
-  };
-
   await importWithAssertion(adapter, "providerNodes", data.providerNodes || [], async (n) => {
     const { id, type, name, createdAt, updatedAt, ...rest } = n;
     const cols = ['id', 'type', 'name', 'data', 'createdAt', 'updatedAt'];
-    const sql = buildInsertReplace("providerNodes", cols);
-    await adapter.run(sql, [id, type || null, name || null, stringifyJson(rest), createdAt || new Date().toISOString(), updatedAt || new Date().toISOString()]);
+    await adapter.run(buildInsertReplace("providerNodes", cols), [id, type || null, name || null, stringifyJson(rest), createdAt || new Date().toISOString(), updatedAt || new Date().toISOString()]);
   }, (n) => ({ id: n.id ?? null, type: n.type ?? null, name: n.name ?? null }));
 
   await importWithAssertion(adapter, "proxyPools", data.proxyPools || [], async (p) => {
     const { id, isActive, testStatus, createdAt, updatedAt, ...rest } = p;
     const cols = ['id', 'isActive', 'testStatus', 'data', 'createdAt', 'updatedAt'];
-    const sql = buildInsertReplace("proxyPools", cols);
-    await adapter.run(sql, [id, isActive === false ? 0 : 1, testStatus || "unknown", stringifyJson(rest), createdAt || new Date().toISOString(), updatedAt || new Date().toISOString()]);
+    await adapter.run(buildInsertReplace("proxyPools", cols), [id, isActive === false ? 0 : 1, testStatus || "unknown", stringifyJson(rest), createdAt || new Date().toISOString(), updatedAt || new Date().toISOString()]);
   }, (p) => ({ id: p.id ?? null }));
 
   await importWithAssertion(adapter, "apiKeys", data.apiKeys || [], async (k) => {
     const cols = ['id', 'key', 'name', 'machineId', 'isActive', 'createdAt'];
-    const sql = buildInsertReplace("apiKeys", cols);
-    await adapter.run(sql, [k.id, k.key, k.name || null, k.machineId || null, k.isActive === false ? 0 : 1, k.createdAt || new Date().toISOString()]);
+    await adapter.run(buildInsertReplace("apiKeys", cols), [k.id, k.key, k.name || null, k.machineId || null, k.isActive === false ? 0 : 1, k.createdAt || new Date().toISOString()]);
   }, (k) => ({ id: k.id ?? null, name: k.name ?? null }));
 
   await importWithAssertion(adapter, "combos", data.combos || [], async (c) => {
     const cols = ['id', 'name', 'kind', 'models', 'createdAt', 'updatedAt'];
-    const sql = buildInsertReplace("combos", cols);
-    await adapter.run(sql, [c.id, c.name, c.kind || null, stringifyJson(c.models || []), c.createdAt || new Date().toISOString(), c.updatedAt || new Date().toISOString()]);
+    await adapter.run(buildInsertReplace("combos", cols), [c.id, c.name, c.kind || null, stringifyJson(c.models || []), c.createdAt || new Date().toISOString(), c.updatedAt || new Date().toISOString()]);
   }, (c) => ({ id: c.id ?? null, name: c.name ?? null }));
 
   for (const [alias, model] of Object.entries(data.modelAliases || {})) {
