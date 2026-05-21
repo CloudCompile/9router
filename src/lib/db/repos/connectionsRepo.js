@@ -13,17 +13,19 @@ const OPTIONAL_FIELDS = [
 function rowToConn(row) {
   if (!row) return null;
   const extra = parseJson(row.data, {});
+  // PostgreSQL folds unquoted identifiers to lowercase; SQLite preserves camelCase
+  const isActive = row.isActive ?? row.isactive;
   return {
     ...extra,
     id: row.id,
     provider: row.provider,
-    authType: row.authType,
+    authType: row.authType ?? row.authtype,
     name: row.name,
     email: row.email,
     priority: row.priority,
-    isActive: row.isActive === 1 || row.isActive === true,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
+    isActive: isActive === 1 || isActive === true,
+    createdAt: row.createdAt ?? row.createdat,
+    updatedAt: row.updatedAt ?? row.updatedat,
   };
 }
 
